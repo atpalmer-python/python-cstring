@@ -32,8 +32,35 @@ static Py_ssize_t cstring_len(PyObject *self) {
     return Py_SIZE(self) - 1;
 }
 
+static PyTypeObject cstring_type;
+
+static int _ensure_cstring(PyObject *self) {
+    if(Py_TYPE(self) == &cstring_type)
+        return 1;
+    PyErr_Format(
+        PyExc_TypeError,
+        "Object must have type cstring, not %s.",
+        Py_TYPE(self)->tp_name);
+    return 0;
+}
+
+static PyObject *cstring_concat(PyObject *left, PyObject *right) {
+    if(!_ensure_cstring(left))
+        return NULL;
+    if(!_ensure_cstring(right))
+        return NULL;
+
+    Py_ssize_t size = cstring_len(left) + cstring_len(right) + 1;
+
+    struct cstring *new = Py_TYPE(left)->tp_alloc(Py_TYPE(left), size);
+    memcpy(new->value, CSTRING_VALUE(left), Py_SIZE(left));
+    memcpy(&new->value[cstring_len(left)], CSTRING_VALUE(right), Py_SIZE(right)); 
+    return (PyObject *)new;
+}
+
 static PySequenceMethods cstring_as_sequence = {
     .sq_length = cstring_len,
+    .sq_concat = cstring_concat,
 };
 
 static PyTypeObject cstring_type = {
