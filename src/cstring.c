@@ -7,17 +7,18 @@ struct cstring {
 
 #define CSTRING_VALUE(self) (((struct cstring *)self)->value)
 
-static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject **kwargs) {
-    char *value = NULL;
-
-    if(!PyArg_ParseTuple(args, "s", &value))
-        return NULL;
-
-    int size = strlen(value) + 1;
-
+static PyObject *_cstring_new(PyTypeObject *type, const char *value, int size) {
     struct cstring *new = type->tp_alloc(type, size);
     memcpy(new->value, value, size);
     return (PyObject *)new;
+}
+
+static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject **kwargs) {
+    char *value = NULL;
+    if(!PyArg_ParseTuple(args, "s", &value))
+        return NULL;
+    int size = strlen(value) + 1;
+    return _cstring_new(type, value, size);
 }
 
 static void cstring_dealloc(PyObject *self) {
@@ -58,9 +59,25 @@ static PyObject *cstring_concat(PyObject *left, PyObject *right) {
     return (PyObject *)new;
 }
 
+static PyObject *cstring_repeat(PyObject *self, Py_ssize_t count) {
+    if(!_ensure_cstring(self))
+        return NULL;
+    if(count <= 0)
+        return _cstring_new(Py_TYPE(self), "", 1);
+
+    Py_ssize_t size = (cstring_len(self) * count) + 1;
+
+    struct cstring *new = Py_TYPE(self)->tp_alloc(Py_TYPE(self), size);
+    for(Py_ssize_t i = 0; i < size - 1; i += cstring_len(self)) {
+        memcpy(&new->value[i], CSTRING_VALUE(self), Py_SIZE(self));
+    }
+    return (PyObject *)new;
+}
+
 static PySequenceMethods cstring_as_sequence = {
     .sq_length = cstring_len,
     .sq_concat = cstring_concat,
+    .sq_repeat = cstring_repeat,
 };
 
 static PyTypeObject cstring_type = {
