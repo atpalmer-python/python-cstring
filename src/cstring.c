@@ -7,9 +7,10 @@ struct cstring {
 
 #define CSTRING_VALUE(self) (((struct cstring *)self)->value)
 
-static PyObject *_cstring_new(PyTypeObject *type, const char *value, int size) {
-    struct cstring *new = type->tp_alloc(type, size);
-    memcpy(new->value, value, size);
+static PyObject *_cstring_new(PyTypeObject *type, const char *value, size_t len) {
+    struct cstring *new = type->tp_alloc(type, len + 1);
+    memcpy(new->value, value, len);
+    new->value[len] = '\0';
     return (PyObject *)new;
 }
 
@@ -17,8 +18,8 @@ static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject **kwar
     char *value = NULL;
     if(!PyArg_ParseTuple(args, "s", &value))
         return NULL;
-    int size = strlen(value) + 1;
-    return _cstring_new(type, value, size);
+    size_t len = strlen(value);
+    return _cstring_new(type, value, len);
 }
 
 static void cstring_dealloc(PyObject *self) {
@@ -63,7 +64,7 @@ static PyObject *cstring_repeat(PyObject *self, Py_ssize_t count) {
     if(!_ensure_cstring(self))
         return NULL;
     if(count <= 0)
-        return _cstring_new(Py_TYPE(self), "", 1);
+        return _cstring_new(Py_TYPE(self), "", 0);
 
     Py_ssize_t size = (cstring_len(self) * count) + 1;
 
@@ -74,10 +75,24 @@ static PyObject *cstring_repeat(PyObject *self, Py_ssize_t count) {
     return (PyObject *)new;
 }
 
+static Py_ssize_t _ensure_valid_index(PyObject *self, Py_ssize_t i) {
+    if(i >= 0 && i < cstring_len(self))
+        return i;
+    PyErr_SetString(PyExc_IndexError, "Index is out of bounds");
+    return -1;
+}
+
+static PyObject *cstring_item(PyObject *self, Py_ssize_t i) {
+    if(_ensure_valid_index(self, i) < 0)
+        return NULL;
+    return _cstring_new(Py_TYPE(self), &CSTRING_VALUE(self)[i], 1);
+}
+
 static PySequenceMethods cstring_as_sequence = {
     .sq_length = cstring_len,
     .sq_concat = cstring_concat,
     .sq_repeat = cstring_repeat,
+    .sq_item = cstring_item,
 };
 
 static PyTypeObject cstring_type = {
