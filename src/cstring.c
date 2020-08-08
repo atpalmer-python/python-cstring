@@ -28,6 +28,14 @@ static PyObject *cstring_str(PyObject *self) {
     return PyUnicode_FromString(CSTRING_VALUE(self));
 }
 
+static Py_ssize_t cstring_len(PyObject *self) {
+    return Py_SIZE(self) - 1;
+}
+
+static PySequenceMethods cstring_as_sequence = {
+    .sq_length = cstring_len,
+};
+
 static PyTypeObject cstring_type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "cstring",
@@ -38,6 +46,7 @@ static PyTypeObject cstring_type = {
     .tp_new = cstring_new,
     .tp_dealloc = cstring_dealloc,
     .tp_str = cstring_str,
+    .tp_as_sequence = &cstring_as_sequence,
 };
 
 static struct PyModuleDef module = {
