@@ -56,3 +56,11 @@ def test_item_ok_pos():
     assert isinstance(result, cstring)
     assert str(result) == str(cstring('o'))  # TODO: implement cstring equality!
 
+
+def test_contains_True():
+    assert cstring('ell') in cstring('hello')
+
+
+def test_contains_False():
+    assert cstring('hello') not in cstring('world')
+

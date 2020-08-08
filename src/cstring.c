@@ -88,11 +88,20 @@ static PyObject *cstring_item(PyObject *self, Py_ssize_t i) {
     return _cstring_new(Py_TYPE(self), &CSTRING_VALUE(self)[i], 1);
 }
 
+static int cstring_contains(PyObject *self, PyObject *arg) {
+    if(!_ensure_cstring(arg))
+        return -1;
+    if(strstr(CSTRING_VALUE(self), CSTRING_VALUE(arg)))
+        return 1;
+    return 0;
+}
+
 static PySequenceMethods cstring_as_sequence = {
     .sq_length = cstring_len,
     .sq_concat = cstring_concat,
     .sq_repeat = cstring_repeat,
     .sq_item = cstring_item,
+    .sq_contains = cstring_contains,
 };
 
 static PyTypeObject cstring_type = {
