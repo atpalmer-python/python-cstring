@@ -141,6 +141,10 @@ static PySequenceMethods cstring_as_sequence = {
     .sq_contains = cstring_contains,
 };
 
+static PyMappingMethods cstring_as_mapping = {
+    .mp_length = cstring_len,
+};
+
 static PyTypeObject cstring_type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "cstring",
@@ -154,6 +158,7 @@ static PyTypeObject cstring_type = {
     .tp_str = cstring_str,
     .tp_hash = cstring_hash,
     .tp_as_sequence = &cstring_as_sequence,
+    .tp_as_mapping = &cstring_as_mapping,
 };
 
 static struct PyModuleDef module = {
