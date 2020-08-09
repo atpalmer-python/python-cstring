@@ -26,14 +26,6 @@ static void cstring_dealloc(PyObject *self) {
     Py_TYPE(self)->tp_free(self);
 }
 
-static PyObject *cstring_str(PyObject *self) {
-    return PyUnicode_FromString(CSTRING_VALUE(self));
-}
-
-static Py_ssize_t cstring_len(PyObject *self) {
-    return Py_SIZE(self) - 1;
-}
-
 static PyTypeObject cstring_type;
 
 static int _ensure_cstring(PyObject *self) {
@@ -44,6 +36,42 @@ static int _ensure_cstring(PyObject *self) {
         "Object must have type cstring, not %s.",
         Py_TYPE(self)->tp_name);
     return 0;
+}
+
+static PyObject *cstring_str(PyObject *self) {
+    return PyUnicode_FromString(CSTRING_VALUE(self));
+}
+
+static PyObject *cstring_richcompare(PyObject *self, PyObject *other, int op) {
+    if(!_ensure_cstring(other))
+        return NULL;
+
+    const char *left = CSTRING_VALUE(self);
+    const char *right = CSTRING_VALUE(other);
+
+    for(;*left && *right && *left == *right; ++left, ++right)
+        ;
+
+    switch (op) {
+    case Py_EQ:
+        return PyBool_FromLong(*left == *right);
+    case Py_NE:
+        return PyBool_FromLong(*left != *right);
+    case Py_LT:
+        return PyBool_FromLong(*left < *right);
+    case Py_GT:
+        return PyBool_FromLong(*left > *right);
+    case Py_LE:
+        return PyBool_FromLong(*left <= *right);
+    case Py_GE:
+        return PyBool_FromLong(*left >= *right);
+    default:
+        assert(0);
+    }
+}
+
+static Py_ssize_t cstring_len(PyObject *self) {
+    return Py_SIZE(self) - 1;
 }
 
 static PyObject *cstring_concat(PyObject *left, PyObject *right) {
@@ -113,6 +141,7 @@ static PyTypeObject cstring_type = {
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_new = cstring_new,
     .tp_dealloc = cstring_dealloc,
+    .tp_richcompare = cstring_richcompare,
     .tp_str = cstring_str,
     .tp_as_sequence = &cstring_as_sequence,
 };
