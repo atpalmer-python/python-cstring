@@ -65,12 +65,12 @@ def test_concat_TypeError():
 
 def test_repeat_zero():
     result = cstring('hello') * 0
-    assert str(result) == str(cstring(''))  # TODO: implement cstring equality!
+    assert result == cstring('')
 
 
 def test_repeat_five():
     result = cstring('hello') * 5
-    assert str(result) == str(cstring('hellohellohellohellohello'))  # TODO: implement cstring equality!
+    assert result == cstring('hellohellohellohellohello')
 
 
 def test_item_IndexError_too_small():
@@ -81,7 +81,7 @@ def test_item_IndexError_too_small():
 def test_item_ok_neg():
     result = cstring('hello')[-5]
     assert isinstance(result, cstring)
-    assert str(result) == str(cstring('h'))  # TODO: implement cstring equality!
+    assert result == cstring('h')
 
 
 def test_item_IndexError_too_big():
@@ -92,7 +92,7 @@ def test_item_IndexError_too_big():
 def test_item_ok_pos():
     result = cstring('hello')[4]
     assert isinstance(result, cstring)
-    assert str(result) == str(cstring('o'))  # TODO: implement cstring equality!
+    assert result == cstring('o')
 
 
 def test_contains_True():
