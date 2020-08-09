@@ -42,6 +42,10 @@ static PyObject *cstring_str(PyObject *self) {
     return PyUnicode_FromString(CSTRING_VALUE(self));
 }
 
+static Py_hash_t cstring_hash(PyObject *self) {
+    return _Py_HashBytes(CSTRING_VALUE(self), Py_SIZE(self));
+}
+
 static PyObject *cstring_richcompare(PyObject *self, PyObject *other, int op) {
     if(!_ensure_cstring(other))
         return NULL;
@@ -143,6 +147,7 @@ static PyTypeObject cstring_type = {
     .tp_dealloc = cstring_dealloc,
     .tp_richcompare = cstring_richcompare,
     .tp_str = cstring_str,
+    .tp_hash = cstring_hash,
     .tp_as_sequence = &cstring_as_sequence,
 };
 
