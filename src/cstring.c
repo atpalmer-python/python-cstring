@@ -2,13 +2,16 @@
 
 struct cstring {
     PyObject_VAR_HEAD
+    Py_hash_t hash;
     char value[];
 };
 
+#define CSTRING_HASH(self)  (((struct cstring *)self)->hash)
 #define CSTRING_VALUE(self) (((struct cstring *)self)->value)
 
 static PyObject *_cstring_new(PyTypeObject *type, const char *value, size_t len) {
     struct cstring *new = type->tp_alloc(type, len + 1);
+    new->hash = -1;
     memcpy(new->value, value, len);
     new->value[len] = '\0';
     return (PyObject *)new;
@@ -43,7 +46,9 @@ static PyObject *cstring_str(PyObject *self) {
 }
 
 static Py_hash_t cstring_hash(PyObject *self) {
-    return _Py_HashBytes(CSTRING_VALUE(self), Py_SIZE(self));
+    if(CSTRING_HASH(self) == -1)
+        CSTRING_HASH(self) = _Py_HashBytes(CSTRING_VALUE(self), Py_SIZE(self));
+    return CSTRING_HASH(self);
 }
 
 static PyObject *cstring_richcompare(PyObject *self, PyObject *other, int op) {
