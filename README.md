@@ -10,9 +10,12 @@ Alternate string representation to the built-in `str` type.
 
 ## TODO
 
+* Add license
 * Write docs (see `str` type docs)
 * Write docstrings
 * Fill out setup.py
+* Allow initialization from bytes, bytearray, other cstrings, memoryview?, other?
+* Read `__cstring__` "dunder" on objects, if available?
 * Implement iter (iterate over Unicode code points, "runes")
 * Implement str methods
 * Implement buffer interface?
