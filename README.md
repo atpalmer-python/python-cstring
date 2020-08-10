@@ -10,7 +10,6 @@ Alternate string representation to the built-in `str` type.
 
 ## TODO
 
-* Add license
 * Write docs (see `str` type docs)
 * Write docstrings
 * Fill out setup.py
