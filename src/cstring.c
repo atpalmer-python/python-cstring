@@ -6,8 +6,9 @@ struct cstring {
     char value[];
 };
 
-#define CSTRING_HASH(self)  (((struct cstring *)self)->hash)
-#define CSTRING_VALUE(self) (((struct cstring *)self)->value)
+#define CSTRING_HASH(self)      (((struct cstring *)self)->hash)
+#define CSTRING_VALUE(self)     (((struct cstring *)self)->value)
+
 
 static PyObject *_cstring_new(PyTypeObject *type, const char *value, size_t len) {
     struct cstring *new = type->tp_alloc(type, len + 1);
@@ -16,6 +17,8 @@ static PyObject *_cstring_new(PyTypeObject *type, const char *value, size_t len)
     new->value[len] = '\0';
     return (PyObject *)new;
 }
+
+#define CSTRING_NEW_EMPTY(tp)   (_cstring_new(tp, "", 0))
 
 static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject **kwargs) {
     char *value = NULL;
@@ -101,7 +104,7 @@ static PyObject *cstring_repeat(PyObject *self, Py_ssize_t count) {
     if(!_ensure_cstring(self))
         return NULL;
     if(count <= 0)
-        return _cstring_new(Py_TYPE(self), "", 0);
+        return CSTRING_NEW_EMPTY(Py_TYPE(self));
 
     Py_ssize_t size = (cstring_len(self) * count) + 1;
 
@@ -133,6 +136,42 @@ static int cstring_contains(PyObject *self, PyObject *arg) {
     return 0;
 }
 
+static PyObject *_cstring_subscript_index(PyObject *self, PyObject *index) {
+    Py_ssize_t i = PyNumber_AsSsize_t(index, PyExc_IndexError);
+    if(PyErr_Occurred())
+        return NULL;
+    if(i < 0)
+        i += cstring_len(self);
+    return cstring_item(self, i);
+}
+
+static PyObject *_cstring_subscript_slice(PyObject *self, PyObject *slice) {
+    Py_ssize_t start, stop, step;
+    if(PySlice_Unpack(slice, &start, &stop, &step) < 0)
+        return NULL;
+    Py_ssize_t slicelen = PySlice_AdjustIndices(cstring_len(self), &start, &stop, step);
+    assert(slicelen >= 0);
+
+    struct cstring *new = Py_TYPE(self)->tp_alloc(Py_TYPE(self), slicelen + 1);
+    char *src = &CSTRING_VALUE(self)[start];
+    for(Py_ssize_t i = 0; i < slicelen; ++i) {
+        new->value[i] = *src;
+        src += step;
+    }
+    new->value[slicelen] = '\0';
+    return (PyObject *)new;
+}
+
+static PyObject *cstring_subscript(PyObject *self, PyObject *key) {
+    if(PyIndex_Check(key))
+        return _cstring_subscript_index(self, key);
+    if(PySlice_Check(key))
+        return _cstring_subscript_slice(self, key);
+
+    PyErr_SetString(PyExc_TypeError, "Subscript must be int or slice.");
+    return NULL;
+}
+
 static PySequenceMethods cstring_as_sequence = {
     .sq_length = cstring_len,
     .sq_concat = cstring_concat,
@@ -143,6 +182,7 @@ static PySequenceMethods cstring_as_sequence = {
 
 static PyMappingMethods cstring_as_mapping = {
     .mp_length = cstring_len,
+    .mp_subscript = cstring_subscript,
 };
 
 static PyTypeObject cstring_type = {
