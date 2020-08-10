@@ -13,7 +13,6 @@ Alternate string representation to the built-in `str` type.
 * Write docs (see `str` type docs)
 * Write docstrings
 * Fill out setup.py
-* Implement repr
 * Implement iter (iterate over Unicode code points, "runes")
 * Implement str methods
 * Implement buffer interface?

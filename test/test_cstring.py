@@ -6,6 +6,10 @@ def test_str():
     assert str(result) == 'hello, world'
 
 
+def test_repr():
+    assert repr(cstring('"hello" "world" 🙂')) == repr('"hello" "world" 🙂')
+
+
 def test_hash():
     a = cstring('hello')
     b = cstring('hello')
