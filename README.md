@@ -8,6 +8,17 @@ Alternate string representation to the built-in `str` type.
 * `len` returns size in _bytes_ (not including terminating zero-byte).
 * Random access (to _bytes_, *not* Unicode code points) is supported with indices and slices.
 
+## Methods
+
+### count(substring [,start [,end]])
+
+See: https://docs.python.org/3/library/stdtypes.html#str.count
+
+Notes:
+
+* `substring` may be a `cstring` or Python `str` object.
+* `start` and `end`, if provided, are _byte_ indexes.
+
 ## TODO
 
 * Write docs (see `str` type docs)
@@ -17,5 +28,6 @@ Alternate string representation to the built-in `str` type.
 * Read `__cstring__` "dunder" on objects, if available?
 * Implement iter (iterate over Unicode code points, "runes")
 * Implement str methods
+* Include start/end indexes as byte indexes? Calculate code points? Or just don't support?
 * Implement buffer interface?
 * Decide subclassing protocol

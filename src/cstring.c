@@ -179,6 +179,58 @@ static PyObject *cstring_subscript(PyObject *self, PyObject *key) {
     return NULL;
 }
 
+static const char *_obj_to_utf8(PyObject *o, Py_ssize_t *len_p) {
+    if(PyUnicode_Check(o))
+        return PyUnicode_AsUTF8AndSize(o, len_p);
+    if(Py_TYPE(o) == &cstring_type) {
+        *len_p = cstring_len(o);
+        return CSTRING_VALUE(o);
+    }
+    PyErr_Format(
+        PyExc_TypeError, "Object cannot be type %s.", Py_TYPE(o)->tp_name);
+    return NULL;
+}
+
+static Py_ssize_t _fix_index(Py_ssize_t i, Py_ssize_t len) {
+    Py_ssize_t result = i;
+    if(result < 0)
+        result += len;
+    if(result < 0)
+        result = 0;
+    if(result > len)
+        result = len;
+    return result;
+}
+
+PyDoc_STRVAR(count__doc__, "");
+static PyObject *cstring_count(PyObject *self, PyObject *args) {
+    PyObject *substr_obj;
+    Py_ssize_t start = 0;
+    Py_ssize_t end = PY_SSIZE_T_MAX;
+
+    if(!PyArg_ParseTuple(args, "O|nn", &substr_obj, &start, &end))
+        return NULL;
+
+    Py_ssize_t substr_len;
+    const char *substr = _obj_to_utf8(substr_obj, &substr_len);
+    if(!substr)
+        return NULL;
+
+    start = _fix_index(start, cstring_len(self));
+    end = _fix_index(end, cstring_len(self));
+
+    char *p = &CSTRING_VALUE(self)[start];
+    long result = 0;
+    while((p = strstr(p, substr)) != NULL) {
+        ++result;
+        p += substr_len;
+        if(p >= &CSTRING_VALUE(self)[end])
+            break;
+    }
+
+    return PyLong_FromLong(result);
+}
+
 static PySequenceMethods cstring_as_sequence = {
     .sq_length = cstring_len,
     .sq_concat = cstring_concat,
@@ -193,6 +245,7 @@ static PyMappingMethods cstring_as_mapping = {
 };
 
 static PyMethodDef cstring_methods[] = {
+    {"count", cstring_count, METH_VARARGS, count__doc__},
     {0},
 };
 
