@@ -192,6 +192,10 @@ static PyMappingMethods cstring_as_mapping = {
     .mp_subscript = cstring_subscript,
 };
 
+static PyMethodDef cstring_methods[] = {
+    {0},
+};
+
 static PyTypeObject cstring_type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "cstring",
@@ -207,6 +211,7 @@ static PyTypeObject cstring_type = {
     .tp_hash = cstring_hash,
     .tp_as_sequence = &cstring_as_sequence,
     .tp_as_mapping = &cstring_as_mapping,
+    .tp_methods = cstring_methods,
 };
 
 static struct PyModuleDef module = {
