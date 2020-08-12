@@ -6,8 +6,9 @@ struct cstring {
     char value[];
 };
 
-#define CSTRING_HASH(self)      (((struct cstring *)self)->hash)
-#define CSTRING_VALUE(self)     (((struct cstring *)self)->value)
+#define CSTRING_HASH(self)          (((struct cstring *)self)->hash)
+#define CSTRING_VALUE(self)         (((struct cstring *)self)->value)
+#define CSTRING_VALUE_AT(self, i)   (&CSTRING_VALUE(self)[(i)])
 
 
 static PyObject *_cstring_new(PyTypeObject *type, const char *value, size_t len) {
@@ -132,7 +133,7 @@ static Py_ssize_t _ensure_valid_index(PyObject *self, Py_ssize_t i) {
 static PyObject *cstring_item(PyObject *self, Py_ssize_t i) {
     if(_ensure_valid_index(self, i) < 0)
         return NULL;
-    return _cstring_new(Py_TYPE(self), &CSTRING_VALUE(self)[i], 1);
+    return _cstring_new(Py_TYPE(self), CSTRING_VALUE_AT(self, i), 1);
 }
 
 static int cstring_contains(PyObject *self, PyObject *arg) {
@@ -160,7 +161,7 @@ static PyObject *_cstring_subscript_slice(PyObject *self, PyObject *slice) {
     assert(slicelen >= 0);
 
     struct cstring *new = Py_TYPE(self)->tp_alloc(Py_TYPE(self), slicelen + 1);
-    char *src = &CSTRING_VALUE(self)[start];
+    char *src = CSTRING_VALUE_AT(self, start);
     for(Py_ssize_t i = 0; i < slicelen; ++i) {
         new->value[i] = *src;
         src += step;
@@ -202,8 +203,14 @@ static Py_ssize_t _fix_index(Py_ssize_t i, Py_ssize_t len) {
     return result;
 }
 
-PyDoc_STRVAR(count__doc__, "");
-static PyObject *cstring_count(PyObject *self, PyObject *args) {
+struct _substr_params {
+    const char *start;
+    const char *end;
+    const char *substr;
+    Py_ssize_t substr_len;
+};
+
+static struct _substr_params *_parse_substr_args(PyObject *self, PyObject *args, struct _substr_params *params) {
     PyObject *substr_obj;
     Py_ssize_t start = 0;
     Py_ssize_t end = PY_SSIZE_T_MAX;
@@ -219,12 +226,27 @@ static PyObject *cstring_count(PyObject *self, PyObject *args) {
     start = _fix_index(start, cstring_len(self));
     end = _fix_index(end, cstring_len(self));
 
-    char *p = &CSTRING_VALUE(self)[start];
+    params->start = CSTRING_VALUE_AT(self, start);
+    params->end = CSTRING_VALUE_AT(self, end);
+    params->substr = substr;
+    params->substr_len = substr_len;
+
+    return params;
+}
+
+PyDoc_STRVAR(count__doc__, "");
+static PyObject *cstring_count(PyObject *self, PyObject *args) {
+    struct _substr_params params;
+
+    if(!_parse_substr_args(self, args, &params))
+        return NULL;
+
+    char *p = params.start;
     long result = 0;
-    while((p = strstr(p, substr)) != NULL) {
+    while((p = strstr(p, params.substr)) != NULL) {
         ++result;
-        p += substr_len;
-        if(p >= &CSTRING_VALUE(self)[end])
+        p += params.substr_len;
+        if(p >= params.end)
             break;
     }
 
@@ -233,30 +255,18 @@ static PyObject *cstring_count(PyObject *self, PyObject *args) {
 
 PyDoc_STRVAR(find__doc__, "");
 PyObject *cstring_find(PyObject *self, PyObject *args) {
-    PyObject *substr_obj;
-    Py_ssize_t start = 0;
-    Py_ssize_t end = PY_SSIZE_T_MAX;
+    struct _substr_params params;
 
-    if(!PyArg_ParseTuple(args, "O|nn", &substr_obj, &start, &end))
+    if(!_parse_substr_args(self, args, &params))
         return NULL;
 
-    Py_ssize_t substr_len;
-    const char *substr = _obj_to_utf8(substr_obj, &substr_len);
-    if(!substr)
-        return NULL;
-
-    start = _fix_index(start, cstring_len(self));
-    end = _fix_index(end, cstring_len(self));
-
-    char *p = strstr(&CSTRING_VALUE(self)[start], substr);
+    char *p = strstr(params.start, params.substr);
     if(!p)
         return PyLong_FromLong(-1);
-
-    Py_ssize_t result = p - CSTRING_VALUE(self);
-    if(result + substr_len > end)
+    if(p + params.substr_len > params.end)
         return PyLong_FromLong(-1);
 
-    return PyLong_FromSsize_t(result);
+    return PyLong_FromSsize_t(p - CSTRING_VALUE(self));
 }
 
 static PySequenceMethods cstring_as_sequence = {
