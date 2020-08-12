@@ -231,6 +231,34 @@ static PyObject *cstring_count(PyObject *self, PyObject *args) {
     return PyLong_FromLong(result);
 }
 
+PyDoc_STRVAR(find__doc__, "");
+PyObject *cstring_find(PyObject *self, PyObject *args) {
+    PyObject *substr_obj;
+    Py_ssize_t start = 0;
+    Py_ssize_t end = PY_SSIZE_T_MAX;
+
+    if(!PyArg_ParseTuple(args, "O|nn", &substr_obj, &start, &end))
+        return NULL;
+
+    Py_ssize_t substr_len;
+    const char *substr = _obj_to_utf8(substr_obj, &substr_len);
+    if(!substr)
+        return NULL;
+
+    start = _fix_index(start, cstring_len(self));
+    end = _fix_index(end, cstring_len(self));
+
+    char *p = strstr(&CSTRING_VALUE(self)[start], substr);
+    if(!p)
+        return PyLong_FromLong(-1);
+
+    Py_ssize_t result = p - CSTRING_VALUE(self);
+    if(result + substr_len > end)
+        return PyLong_FromLong(-1);
+
+    return PyLong_FromSsize_t(result);
+}
+
 static PySequenceMethods cstring_as_sequence = {
     .sq_length = cstring_len,
     .sq_concat = cstring_concat,
@@ -246,6 +274,7 @@ static PyMappingMethods cstring_as_mapping = {
 
 static PyMethodDef cstring_methods[] = {
     {"count", cstring_count, METH_VARARGS, count__doc__},
+    {"find", cstring_find, METH_VARARGS, find__doc__},
     {0},
 };
 
