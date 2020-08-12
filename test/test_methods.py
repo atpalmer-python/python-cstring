@@ -1,3 +1,4 @@
+import pytest
 from cstring import cstring
 
 
@@ -34,4 +35,20 @@ def test_find_with_start():
 def test_find_missing():
     target = cstring('hello')
     assert target.find('lo', 0, 4) == -1
+
+
+def test_index():
+    target = cstring('hello')
+    assert target.index('lo') == 3
+
+
+def test_index_with_start():
+    target = cstring('hello')
+    assert target.index('lo', 3) == 3
+
+
+def test_index_missing():
+    target = cstring('hello')
+    with pytest.raises(ValueError):
+        return target.index('lo', 0, 4)
 

@@ -262,11 +262,34 @@ PyObject *cstring_find(PyObject *self, PyObject *args) {
 
     char *p = strstr(params.start, params.substr);
     if(!p)
-        return PyLong_FromLong(-1);
+        goto err;
     if(p + params.substr_len > params.end)
-        return PyLong_FromLong(-1);
+        goto err;
 
     return PyLong_FromSsize_t(p - CSTRING_VALUE(self));
+
+err:
+    return PyLong_FromLong(-1);
+}
+
+PyDoc_STRVAR(index__doc__, "");
+PyObject *cstring_index(PyObject *self, PyObject *args) {
+    struct _substr_params params;
+
+    if(!_parse_substr_args(self, args, &params))
+        return NULL;
+
+    char *p = strstr(params.start, params.substr);
+    if(!p)
+        goto err;
+    if(p + params.substr_len > params.end)
+        goto err;
+
+    return PyLong_FromSsize_t(p - CSTRING_VALUE(self));
+
+err:
+    PyErr_SetString(PyExc_ValueError, "substring not found");
+    return NULL;
 }
 
 static PySequenceMethods cstring_as_sequence = {
@@ -285,6 +308,7 @@ static PyMappingMethods cstring_as_mapping = {
 static PyMethodDef cstring_methods[] = {
     {"count", cstring_count, METH_VARARGS, count__doc__},
     {"find", cstring_find, METH_VARARGS, find__doc__},
+    {"index", cstring_index, METH_VARARGS, index__doc__},
     {0},
 };
 

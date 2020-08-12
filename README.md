@@ -10,6 +10,7 @@ Alternate string representation to the built-in `str` type.
 
 ## Methods
 
+
 ### count(substring [,start [,end]])
 
 See: https://docs.python.org/3/library/stdtypes.html#str.count
@@ -19,6 +20,7 @@ Notes:
 * `substring` may be a `cstring` or Python `str` object.
 * `start` and `end`, if provided, are _byte_ indexes.
 
+
 ### find(substring [,start [,end]])
 
 See: https://docs.python.org/3/library/stdtypes.html#str.find
@@ -27,6 +29,17 @@ Notes:
 
 * `substring` may be a `cstring` or Python `str` object.
 * `start` and `end`, if provided, are _byte_ indexes.
+
+
+### index(substring [,start [,end]])
+
+See: https://docs.python.org/3/library/stdtypes.html#str.index
+
+Notes:
+
+* `substring` may be a `cstring` or Python `str` object.
+* `start` and `end`, if provided, are _byte_ indexes.
+
 
 ## TODO
 
