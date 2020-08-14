@@ -241,7 +241,7 @@ static PyObject *cstring_count(PyObject *self, PyObject *args) {
     if(!_parse_substr_args(self, args, &params))
         return NULL;
 
-    char *p = params.start;
+    const char *p = params.start;
     long result = 0;
     while((p = strstr(p, params.substr)) != NULL) {
         ++result;
