@@ -292,6 +292,35 @@ err:
     return NULL;
 }
 
+static const char *_substr_params_rstr(struct _substr_params *params) {
+    const char *p = params->end - params->substr_len + 1;
+
+    for(;;) {
+        p = memrchr(params->start, *params->substr, p - params->start);
+        if(!p)
+            goto done;
+        if(memcmp(p, params->substr, params->substr_len) == 0)
+            return p;
+    }
+
+done:
+    return NULL;
+}
+
+PyDoc_STRVAR(rfind__doc__, "");
+PyObject *cstring_rfind(PyObject *self, PyObject *args) {
+    struct _substr_params params;
+
+    if(!_parse_substr_args(self, args, &params))
+        return NULL;
+
+    const char *p = _substr_params_rstr(&params);
+    if(!p)
+        return PyLong_FromLong(-1);
+
+    return PyLong_FromSsize_t(p - CSTRING_VALUE(self));
+}
+
 static PySequenceMethods cstring_as_sequence = {
     .sq_length = cstring_len,
     .sq_concat = cstring_concat,
@@ -309,6 +338,7 @@ static PyMethodDef cstring_methods[] = {
     {"count", cstring_count, METH_VARARGS, count__doc__},
     {"find", cstring_find, METH_VARARGS, find__doc__},
     {"index", cstring_index, METH_VARARGS, index__doc__},
+    {"rfind", cstring_rfind, METH_VARARGS, rfind__doc__},
     {0},
 };
 

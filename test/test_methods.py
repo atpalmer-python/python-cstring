@@ -52,3 +52,23 @@ def test_index_missing():
     with pytest.raises(ValueError):
         return target.index('lo', 0, 4)
 
+
+def test_rfind():
+    target = cstring('hello')
+    assert target.rfind('o') == 4
+
+
+def test_rfind_empty():
+    target = cstring('hello')
+    assert target.rfind('') == 5
+
+
+def test_rfind_with_start():
+    target = cstring('hello')
+    assert target.rfind('lo', 3) == 3
+
+
+def test_rfind_missing():
+    target = cstring('hello')
+    assert target.rfind('lo', 0, 4) == -1
+
