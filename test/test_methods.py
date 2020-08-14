@@ -72,3 +72,24 @@ def test_rfind_missing():
     target = cstring('hello')
     assert target.rfind('lo', 0, 4) == -1
 
+
+def test_rindex():
+    target = cstring('hello')
+    assert target.rindex('o') == 4
+
+
+def test_rindex_empty():
+    target = cstring('hello')
+    assert target.rindex('') == 5
+
+
+def test_rindex_with_start():
+    target = cstring('hello')
+    assert target.rindex('lo', 3) == 3
+
+
+def test_rindex_missing():
+    target = cstring('hello')
+    with pytest.raises(ValueError):
+        return target.rindex('lo', 0, 4)
+

@@ -321,6 +321,22 @@ PyObject *cstring_rfind(PyObject *self, PyObject *args) {
     return PyLong_FromSsize_t(p - CSTRING_VALUE(self));
 }
 
+PyDoc_STRVAR(rindex__doc__, "");
+PyObject *cstring_rindex(PyObject *self, PyObject *args) {
+    struct _substr_params params;
+
+    if(!_parse_substr_args(self, args, &params))
+        return NULL;
+
+    const char *p = _substr_params_rstr(&params);
+    if(!p) {
+        PyErr_SetString(PyExc_ValueError, "substring not found");
+        return NULL;
+    }
+
+    return PyLong_FromSsize_t(p - CSTRING_VALUE(self));
+}
+
 static PySequenceMethods cstring_as_sequence = {
     .sq_length = cstring_len,
     .sq_concat = cstring_concat,
@@ -339,6 +355,7 @@ static PyMethodDef cstring_methods[] = {
     {"find", cstring_find, METH_VARARGS, find__doc__},
     {"index", cstring_index, METH_VARARGS, index__doc__},
     {"rfind", cstring_rfind, METH_VARARGS, rfind__doc__},
+    {"rindex", cstring_rindex, METH_VARARGS, rindex__doc__},
     {0},
 };
 
