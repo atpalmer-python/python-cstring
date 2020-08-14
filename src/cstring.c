@@ -12,7 +12,7 @@ struct cstring {
 
 
 static PyObject *_cstring_new(PyTypeObject *type, const char *value, size_t len) {
-    struct cstring *new = type->tp_alloc(type, len + 1);
+    struct cstring *new = (struct cstring *)type->tp_alloc(type, len + 1);
     new->hash = -1;
     memcpy(new->value, value, len);
     new->value[len] = '\0';
@@ -102,7 +102,7 @@ static PyObject *cstring_concat(PyObject *left, PyObject *right) {
 
     Py_ssize_t size = cstring_len(left) + cstring_len(right) + 1;
 
-    struct cstring *new = Py_TYPE(left)->tp_alloc(Py_TYPE(left), size);
+    struct cstring *new = (struct cstring *)Py_TYPE(left)->tp_alloc(Py_TYPE(left), size);
     memcpy(new->value, CSTRING_VALUE(left), Py_SIZE(left));
     memcpy(&new->value[cstring_len(left)], CSTRING_VALUE(right), Py_SIZE(right)); 
     return (PyObject *)new;
@@ -116,7 +116,7 @@ static PyObject *cstring_repeat(PyObject *self, Py_ssize_t count) {
 
     Py_ssize_t size = (cstring_len(self) * count) + 1;
 
-    struct cstring *new = Py_TYPE(self)->tp_alloc(Py_TYPE(self), size);
+    struct cstring *new = (struct cstring *)Py_TYPE(self)->tp_alloc(Py_TYPE(self), size);
     for(Py_ssize_t i = 0; i < size - 1; i += cstring_len(self)) {
         memcpy(&new->value[i], CSTRING_VALUE(self), Py_SIZE(self));
     }
@@ -160,7 +160,7 @@ static PyObject *_cstring_subscript_slice(PyObject *self, PyObject *slice) {
     Py_ssize_t slicelen = PySlice_AdjustIndices(cstring_len(self), &start, &stop, step);
     assert(slicelen >= 0);
 
-    struct cstring *new = Py_TYPE(self)->tp_alloc(Py_TYPE(self), slicelen + 1);
+    struct cstring *new = (struct cstring *)Py_TYPE(self)->tp_alloc(Py_TYPE(self), slicelen + 1);
     char *src = CSTRING_VALUE_AT(self, start);
     for(Py_ssize_t i = 0; i < slicelen; ++i) {
         new->value[i] = *src;
