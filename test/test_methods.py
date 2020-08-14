@@ -93,3 +93,23 @@ def test_rindex_missing():
     with pytest.raises(ValueError):
         return target.rindex('lo', 0, 4)
 
+
+def test_startswith():
+    target = cstring('hello, world')
+    assert target.startswith('hello,') is True
+
+
+def test_startswith_not():
+    target = cstring('hello, world')
+    assert target.startswith('world') is False
+
+
+def test_startswith_with_start():
+    target = cstring('hello, world')
+    assert target.startswith('world', 7) is True
+
+
+def test_startswith_with_start_and_end():
+    target = cstring('hello, world')
+    assert target.startswith('wo', 7, 8) is False
+
