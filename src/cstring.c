@@ -21,7 +21,7 @@ static PyObject *_cstring_new(PyTypeObject *type, const char *value, size_t len)
 
 #define CSTRING_NEW_EMPTY(tp)   (_cstring_new(tp, "", 0))
 
-static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject **kwargs) {
+static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject *kwargs) {
     char *value = NULL;
     if(!PyArg_ParseTuple(args, "s", &value))
         return NULL;
