@@ -253,6 +253,26 @@ static PyObject *cstring_count(PyObject *self, PyObject *args) {
     return PyLong_FromLong(result);
 }
 
+static const char *_substr_params_str(const struct _substr_params *params) {
+    const char *p = strstr(params->start, params->substr);
+    if(!p || p + params->substr_len > params->end)
+        return NULL;
+    return p;
+}
+
+static const char *_substr_params_rstr(const struct _substr_params *params) {
+    const char *p = params->end - params->substr_len + 1;
+    for(;;) {
+        p = memrchr(params->start, *params->substr, p - params->start);
+        if(!p)
+            goto done;
+        if(memcmp(p, params->substr, params->substr_len) == 0)
+            return p;
+    }
+done:
+    return NULL;
+}
+
 PyDoc_STRVAR(find__doc__, "");
 PyObject *cstring_find(PyObject *self, PyObject *args) {
     struct _substr_params params;
@@ -260,16 +280,11 @@ PyObject *cstring_find(PyObject *self, PyObject *args) {
     if(!_parse_substr_args(self, args, &params))
         return NULL;
 
-    char *p = strstr(params.start, params.substr);
+    const char *p = _substr_params_str(&params);
     if(!p)
-        goto err;
-    if(p + params.substr_len > params.end)
-        goto err;
+        return PyLong_FromLong(-1);
 
     return PyLong_FromSsize_t(p - CSTRING_VALUE(self));
-
-err:
-    return PyLong_FromLong(-1);
 }
 
 PyDoc_STRVAR(index__doc__, "");
@@ -279,32 +294,13 @@ PyObject *cstring_index(PyObject *self, PyObject *args) {
     if(!_parse_substr_args(self, args, &params))
         return NULL;
 
-    char *p = strstr(params.start, params.substr);
-    if(!p)
-        goto err;
-    if(p + params.substr_len > params.end)
-        goto err;
-
-    return PyLong_FromSsize_t(p - CSTRING_VALUE(self));
-
-err:
-    PyErr_SetString(PyExc_ValueError, "substring not found");
-    return NULL;
-}
-
-static const char *_substr_params_rstr(struct _substr_params *params) {
-    const char *p = params->end - params->substr_len + 1;
-
-    for(;;) {
-        p = memrchr(params->start, *params->substr, p - params->start);
-        if(!p)
-            goto done;
-        if(memcmp(p, params->substr, params->substr_len) == 0)
-            return p;
+    const char *p = _substr_params_str(&params);
+    if(!p) {
+        PyErr_SetString(PyExc_ValueError, "substring not found");
+        return NULL;
     }
 
-done:
-    return NULL;
+    return PyLong_FromSsize_t(p - CSTRING_VALUE(self));
 }
 
 PyDoc_STRVAR(rfind__doc__, "");
