@@ -71,6 +71,16 @@ Notes:
 * `start` and `end`, if provided, are _byte_ indexes.
 
 
+### endswith(substring [,start [,end]])
+
+See: https://docs.python.org/3/library/stdtypes.html#str.endswith
+
+Notes:
+
+* `substring` may be a `cstring` or Python `str` object.
+* `start` and `end`, if provided, are _byte_ indexes.
+
+
 ## TODO
 
 * Write docs (see `str` type docs)

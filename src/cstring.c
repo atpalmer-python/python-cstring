@@ -344,6 +344,17 @@ PyObject *cstring_startswith(PyObject *self, PyObject *args) {
     return PyBool_FromLong(cmp == 0);
 }
 
+PyDoc_STRVAR(endswith__doc__, "");
+PyObject *cstring_endswith(PyObject *self, PyObject *args) {
+    struct _substr_params params;
+    if(!_parse_substr_args(self, args, &params))
+        return NULL;
+    if(params.end - params.start < params.substr_len)
+        return PyBool_FromLong(0);
+    int cmp = memcmp(params.end - params.substr_len, params.substr, params.substr_len);
+    return PyBool_FromLong(cmp == 0);
+}
+
 static PySequenceMethods cstring_as_sequence = {
     .sq_length = cstring_len,
     .sq_concat = cstring_concat,
@@ -364,6 +375,7 @@ static PyMethodDef cstring_methods[] = {
     {"rfind", cstring_rfind, METH_VARARGS, rfind__doc__},
     {"rindex", cstring_rindex, METH_VARARGS, rindex__doc__},
     {"startswith", cstring_startswith, METH_VARARGS, startswith__doc__},
+    {"endswith", cstring_endswith, METH_VARARGS, endswith__doc__},
     {0},
 };
 

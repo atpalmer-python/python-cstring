@@ -113,3 +113,23 @@ def test_startswith_with_start_and_end():
     target = cstring('hello, world')
     assert target.startswith('wo', 7, 8) is False
 
+
+def test_endswith():
+    target = cstring('hello, world')
+    assert target.endswith('world') is True
+
+
+def test_endswith_not():
+    target = cstring('hello, world')
+    assert target.endswith('hello') is False
+
+
+def test_endswith_with_start():
+    target = cstring('hello, world')
+    assert target.endswith('world', 8) is False
+
+
+def test_endswith_with_start_and_end():
+    target = cstring('hello, world')
+    assert target.endswith('wo', 7, 9) is True
+
