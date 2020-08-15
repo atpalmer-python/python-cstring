@@ -11,6 +11,17 @@ struct cstring {
 #define CSTRING_VALUE_AT(self, i)   (&CSTRING_VALUE(self)[(i)])
 
 
+/*
+ * memrchr not available on some systems, so reimplement.
+ */
+const char *_memrchr(const char *s, int c, size_t n) {
+    for(const char *p = s + n - 1; p >= s; --p) {
+        if(*p == c)
+            return p;
+    }
+    return NULL;
+}
+
 static PyObject *_cstring_new(PyTypeObject *type, const char *value, size_t len) {
     struct cstring *new = (struct cstring *)type->tp_alloc(type, len + 1);
     new->hash = -1;
@@ -268,7 +279,7 @@ static const char *_substr_params_str(const struct _substr_params *params) {
 static const char *_substr_params_rstr(const struct _substr_params *params) {
     const char *p = params->end - params->substr_len + 1;
     for(;;) {
-        p = memrchr(params->start, *params->substr, p - params->start);
+        p = _memrchr(params->start, *params->substr, p - params->start);
         if(!p)
             goto done;
         if(memcmp(p, params->substr, params->substr_len) == 0)
@@ -316,6 +327,7 @@ PyObject *cstring_rfind(PyObject *self, PyObject *args) {
         return NULL;
 
     const char *p = _substr_params_rstr(&params);
+
     if(!p)
         return PyLong_FromLong(-1);
 
