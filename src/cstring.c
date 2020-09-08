@@ -1,15 +1,5 @@
 #include <Python.h>
 
-struct cstring {
-    PyObject_VAR_HEAD
-    Py_hash_t hash;
-    char value[];
-};
-
-#define CSTRING_HASH(self)          (((struct cstring *)self)->hash)
-#define CSTRING_VALUE(self)         (((struct cstring *)self)->value)
-#define CSTRING_VALUE_AT(self, i)   (&CSTRING_VALUE(self)[(i)])
-
 
 /*
  * memrchr not available on some systems, so reimplement.
@@ -21,6 +11,18 @@ const char *_memrchr(const char *s, int c, size_t n) {
     }
     return NULL;
 }
+
+
+
+struct cstring {
+    PyObject_VAR_HEAD
+    Py_hash_t hash;
+    char value[];
+};
+
+#define CSTRING_HASH(self)          (((struct cstring *)self)->hash)
+#define CSTRING_VALUE(self)         (((struct cstring *)self)->value)
+#define CSTRING_VALUE_AT(self, i)   (&CSTRING_VALUE(self)[(i)])
 
 static PyObject *_cstring_new(PyTypeObject *type, const char *value, size_t len) {
     struct cstring *new = (struct cstring *)type->tp_alloc(type, len + 1);
