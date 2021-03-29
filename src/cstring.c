@@ -426,13 +426,52 @@ static PyMappingMethods cstring_as_mapping = {
 };
 
 static PyMethodDef cstring_methods[] = {
+    /* TODO: capitalize */
+    /* TODO: casefold */
+    /* TODO: center */
     {"count", cstring_count, METH_VARARGS, count__doc__},
+    /* TODO: encode (decode???) */
+    {"endswith", cstring_endswith, METH_VARARGS, endswith__doc__},
+    /* TODO: expandtabs */
     {"find", cstring_find, METH_VARARGS, find__doc__},
+    /* TODO: format */
+    /* TODO: format_map */
     {"index", cstring_index, METH_VARARGS, index__doc__},
+    /* TODO: isalnum */
+    /* TODO: isalpha */
+    /* TODO: isascii */
+    /* TODO: isdecimal */
+    /* TODO: isdigit */
+    /* TODO: isidentifier */
+    /* TODO: islower */
+    /* TODO: isnumeric */
+    /* TODO: isprintable */
+    /* TODO: isspace */
+    /* TODO: istitle */
+    /* TODO: isupper */
+    /* TODO: join */
+    /* TODO: ljust */
+    /* TODO: lower */
+    /* TODO: lstrip */
+    /* TODO: maketrans */
+    /* TODO: partition */
+    /* TODO: removeprefix */
+    /* TODO: replace */
     {"rfind", cstring_rfind, METH_VARARGS, rfind__doc__},
     {"rindex", cstring_rindex, METH_VARARGS, rindex__doc__},
+    /* TODO: rjust */
+    /* TODO: rpartition */
+    /* TODO: rsplit */
+    /* TODO: rstrip */
+    /* TODO: split */
+    /* TODO: splitlines */
     {"startswith", cstring_startswith, METH_VARARGS, startswith__doc__},
-    {"endswith", cstring_endswith, METH_VARARGS, endswith__doc__},
+    /* TODO: strip */
+    /* TODO: swapcase */
+    /* TODO: title */
+    /* TODO: translate */
+    /* TODO: upper */
+    /* TODO: zfill */
     {0},
 };
 
