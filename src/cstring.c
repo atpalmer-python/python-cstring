@@ -63,10 +63,17 @@ static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject *kwarg
     PyObject *argobj = NULL;
     if(!PyArg_ParseTuple(args, "O", &argobj))
         return NULL;
+
+    if(PyObject_TypeCheck(argobj, type)) {
+        Py_INCREF(argobj);
+        return argobj;
+    }
+
     Py_ssize_t len = 0;
     const char *buffer = _obj_as_string_and_size(argobj, &len);
     if(!buffer)
         return NULL;
+
     return _cstring_new(type, buffer, len);
 }
 
