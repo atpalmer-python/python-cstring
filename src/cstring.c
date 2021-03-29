@@ -404,7 +404,7 @@ static PyMethodDef cstring_methods[] = {
 
 static PyTypeObject cstring_type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "cstring",
+    .tp_name = "cstring.cstring",
     .tp_doc = "",
     .tp_basicsize = sizeof(struct cstring),
     .tp_itemsize = sizeof(char),
