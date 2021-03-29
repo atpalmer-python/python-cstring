@@ -83,6 +83,21 @@ def test_isdigit_False():
     assert target.isdigit() == False
 
 
+def test_islower_numeric():
+    target = cstring('123')
+    assert target.islower() == False
+
+
+def test_islower_alnum_lc():
+    target = cstring('hello123')
+    assert target.islower() == True
+
+
+def test_islower_alnum_uc():
+    target = cstring('Hello123')
+    assert target.islower() == False
+
+
 def test_rfind():
     target = cstring('hello')
     assert target.rfind('o') == 4

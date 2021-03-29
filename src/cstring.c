@@ -392,6 +392,27 @@ PyObject *cstring_isdigit(PyObject *self, PyObject *args) {
     Py_RETURN_TRUE;
 }
 
+PyDoc_STRVAR(islower__doc__, "");
+PyObject *cstring_islower(PyObject *self, PyObject *args) {
+    const char *p = CSTRING_VALUE(self);
+    while(*p) {
+        if(isalpha(*p)) {
+            if(!islower(*p))
+                Py_RETURN_FALSE;
+            ++p;
+            while(*p) {
+                if(isalpha(*p) && !islower(*p))
+                    Py_RETURN_FALSE;
+                ++p;
+            }
+            /* at least one lc alpha and no uc alphas */
+            Py_RETURN_TRUE;
+        }
+        ++p;
+    }
+    Py_RETURN_FALSE;
+}
+
 PyDoc_STRVAR(rfind__doc__, "");
 PyObject *cstring_rfind(PyObject *self, PyObject *args) {
     struct _substr_params params;
@@ -476,7 +497,7 @@ static PyMethodDef cstring_methods[] = {
     /* TODO: isdecimal */
     {"isdigit", cstring_isdigit, METH_VARARGS, isdigit__doc__},
     /* TODO: isidentifier */
-    /* TODO: islower */
+    {"islower", cstring_islower, METH_VARARGS, islower__doc__},
     /* TODO: isnumeric */
     /* TODO: isprintable */
     /* TODO: isspace */
