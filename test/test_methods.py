@@ -98,6 +98,16 @@ def test_islower_alnum_uc():
     assert target.islower() == False
 
 
+def test_isprintable_True():
+    target = cstring('hello, world')
+    assert target.isprintable() == True
+
+
+def test_isprintable_False():
+    target = cstring(b'hello, world\x01')
+    assert target.isprintable() == False
+
+
 def test_rfind():
     target = cstring('hello')
     assert target.rfind('o') == 4
