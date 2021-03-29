@@ -50,6 +50,11 @@ static const char *_obj_as_string_and_size(PyObject *o, Py_ssize_t *s) {
         return buffer;
     }
 
+    if(PyByteArray_Check(o)) {
+        *s = PyByteArray_Size(o);
+        return PyByteArray_AsString(o);
+    }
+
     PyErr_Format(
         PyExc_TypeError,
         "Invalid initialization type: %s.",

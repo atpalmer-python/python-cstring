@@ -5,6 +5,10 @@ def test_new_from_bytes():
     assert cstring(b'hello, world') == cstring('hello, world')
 
 
+def test_new_from_bytearray():
+    assert cstring(bytearray('hello, world', 'utf8')) == cstring('hello, world')
+
+
 def test_new_from_cstring():
     assert cstring(cstring('hello, world')) == cstring('hello, world')
 
