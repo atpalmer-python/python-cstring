@@ -577,21 +577,21 @@ static PyMethodDef cstring_methods[] = {
     /* TODO: format */
     /* TODO: format_map */
     {"index", cstring_index, METH_VARARGS, index__doc__},
-    {"isalnum", cstring_isalnum, METH_VARARGS, isalnum__doc__},
-    {"isalpha", cstring_isalpha, METH_VARARGS, isalpha__doc__},
+    {"isalnum", cstring_isalnum, METH_NOARGS, isalnum__doc__},
+    {"isalpha", cstring_isalpha, METH_NOARGS, isalpha__doc__},
     /* TODO: isascii */
     /* TODO: isdecimal */
-    {"isdigit", cstring_isdigit, METH_VARARGS, isdigit__doc__},
+    {"isdigit", cstring_isdigit, METH_NOARGS, isdigit__doc__},
     /* TODO: isidentifier */
-    {"islower", cstring_islower, METH_VARARGS, islower__doc__},
+    {"islower", cstring_islower, METH_NOARGS, islower__doc__},
     /* TODO: isnumeric */
-    {"isprintable", cstring_isprintable, METH_VARARGS, isprintable__doc__},
-    {"isspace", cstring_isspace, METH_VARARGS, isspace__doc__},
+    {"isprintable", cstring_isprintable, METH_NOARGS, isprintable__doc__},
+    {"isspace", cstring_isspace, METH_NOARGS, isspace__doc__},
     /* TODO: istitle */
-    {"isupper", cstring_isupper, METH_VARARGS, isupper__doc__},
+    {"isupper", cstring_isupper, METH_NOARGS, isupper__doc__},
     /* TODO: join */
     /* TODO: ljust */
-    {"lower", cstring_lower, METH_VARARGS, lower__doc__},
+    {"lower", cstring_lower, METH_NOARGS, lower__doc__},
     /* TODO: lstrip */
     /* TODO: maketrans */
     /* TODO: partition */
@@ -607,10 +607,10 @@ static PyMethodDef cstring_methods[] = {
     /* TODO: splitlines */
     {"startswith", cstring_startswith, METH_VARARGS, startswith__doc__},
     /* TODO: strip */
-    {"swapcase", cstring_swapcase, METH_VARARGS, swapcase__doc__},
+    {"swapcase", cstring_swapcase, METH_NOARGS, swapcase__doc__},
     /* TODO: title */
     /* TODO: translate */
-    {"upper", cstring_upper, METH_VARARGS, upper__doc__},
+    {"upper", cstring_upper, METH_NOARGS, upper__doc__},
     /* TODO: zfill */
     {0},
 };
