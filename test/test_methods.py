@@ -223,3 +223,8 @@ def test_endswith_with_start_and_end():
     target = cstring('hello, world')
     assert target.endswith('wo', 7, 9) is True
 
+
+def test_upper():
+    target = cstring('hello123')
+    assert target.upper() == cstring('HELLO123')
+

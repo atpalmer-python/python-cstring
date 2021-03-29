@@ -521,6 +521,18 @@ PyObject *cstring_endswith(PyObject *self, PyObject *args) {
     return PyBool_FromLong(cmp == 0);
 }
 
+PyDoc_STRVAR(upper__doc__, "");
+PyObject *cstring_upper(PyObject *self, PyObject *args) {
+    struct cstring *new = CSTRING_ALLOC(Py_TYPE(self), Py_SIZE(self));
+    const char *s = CSTRING_VALUE(self);
+    char *d = CSTRING_VALUE(new);
+
+    while((*d++ = toupper(*s++)) != '\0')
+        ;
+
+    return (PyObject *)new;
+}
+
 static PySequenceMethods cstring_as_sequence = {
     .sq_length = cstring_len,
     .sq_concat = cstring_concat,
@@ -579,7 +591,7 @@ static PyMethodDef cstring_methods[] = {
     /* TODO: swapcase */
     /* TODO: title */
     /* TODO: translate */
-    /* TODO: upper */
+    {"upper", cstring_upper, METH_VARARGS, upper__doc__},
     /* TODO: zfill */
     {0},
 };
