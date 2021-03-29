@@ -359,6 +359,17 @@ PyObject *cstring_index(PyObject *self, PyObject *args) {
     return PyLong_FromSsize_t(p - CSTRING_VALUE(self));
 }
 
+PyDoc_STRVAR(isalnum__doc__, "");
+PyObject *cstring_isalnum(PyObject *self, PyObject *args) {
+    const char *p = CSTRING_VALUE(self);
+    while(*p) {
+        if(!isalnum(*p))
+            Py_RETURN_FALSE;
+        ++p;
+    }
+    Py_RETURN_TRUE;
+}
+
 PyDoc_STRVAR(isalpha__doc__, "");
 PyObject *cstring_isalpha(PyObject *self, PyObject *args) {
     const char *p = CSTRING_VALUE(self);
@@ -459,7 +470,7 @@ static PyMethodDef cstring_methods[] = {
     /* TODO: format */
     /* TODO: format_map */
     {"index", cstring_index, METH_VARARGS, index__doc__},
-    /* TODO: isalnum */
+    {"isalnum", cstring_isalnum, METH_VARARGS, isalnum__doc__},
     {"isalpha", cstring_isalpha, METH_VARARGS, isalpha__doc__},
     /* TODO: isascii */
     /* TODO: isdecimal */

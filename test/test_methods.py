@@ -53,6 +53,16 @@ def test_index_missing():
         return target.index('lo', 0, 4)
 
 
+def test_isalnum_True():
+    target = cstring('hello123')
+    assert target.isalnum() == True
+
+
+def test_isalnum_False():
+    target = cstring('hello_123')
+    assert target.isalnum() == False
+
+
 def test_isalpha_True():
     target = cstring('hello')
     assert target.isalpha() == True
