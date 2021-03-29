@@ -53,6 +53,16 @@ def test_index_missing():
         return target.index('lo', 0, 4)
 
 
+def test_isalpha_True():
+    target = cstring('hello')
+    assert target.isalpha() == True
+
+
+def test_isalpha_False():
+    target = cstring('hello123')
+    assert target.isalpha() == False
+
+
 def test_rfind():
     target = cstring('hello')
     assert target.rfind('o') == 4
