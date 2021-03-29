@@ -20,6 +20,8 @@ struct cstring {
     char value[];
 };
 
+static PyTypeObject cstring_type;
+
 #define CSTRING_HASH(self)          (((struct cstring *)self)->hash)
 #define CSTRING_VALUE(self)         (((struct cstring *)self)->value)
 #define CSTRING_VALUE_AT(self, i)   (&CSTRING_VALUE(self)[(i)])
@@ -32,7 +34,9 @@ static PyObject *_cstring_new(PyTypeObject *type, const char *value, size_t len)
     return (PyObject *)new;
 }
 
-#define CSTRING_NEW_EMPTY(tp)   (_cstring_new(tp, "", 0))
+static PyObject *cstring_new_empty(void) {
+    return _cstring_new(&cstring_type, "", 0);
+}
 
 static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject *kwargs) {
     char *value = NULL;
@@ -45,8 +49,6 @@ static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject *kwarg
 static void cstring_dealloc(PyObject *self) {
     Py_TYPE(self)->tp_free(self);
 }
-
-static PyTypeObject cstring_type;
 
 static int _ensure_cstring(PyObject *self) {
     if(PyObject_TypeCheck(self, &cstring_type))
@@ -127,7 +129,7 @@ static PyObject *cstring_repeat(PyObject *self, Py_ssize_t count) {
     if(!_ensure_cstring(self))
         return NULL;
     if(count <= 0)
-        return CSTRING_NEW_EMPTY(Py_TYPE(self));
+        return cstring_new_empty();
 
     Py_ssize_t size = (cstring_len(self) * count) + 1;
 
