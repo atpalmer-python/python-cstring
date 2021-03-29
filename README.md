@@ -3,10 +3,11 @@
 Alternate string representation to the built-in `str` type.
 
 * Uses C-string representation internally.
-* Memory is allocated in one continuous buffer to reduce pointer-hopping.
+* Memory is allocated contiguously to reduce pointer-hopping.
 * UTF-8 encoding.
 * `len` returns size in _bytes_ (not including terminating zero-byte).
 * Random access (to _bytes_, *not* Unicode code points) is supported with indices and slices.
+* Supports initialization from `str`, `bytes`, `bytearray`, `array`, `memoryview`, `cstring`, and other buffer protocol objects.
 
 ## Methods
 
@@ -85,11 +86,9 @@ Notes:
 
 * Write docs (see `str` type docs)
 * Write docstrings
-* Fill out setup.py
-* Allow initialization from bytes, bytearray, other cstrings, memoryview?, other?
-* Read `__cstring__` "dunder" on objects, if available?
+* Fill out setup.py classifiers
 * Implement iter (iterate over Unicode code points, "runes")
 * Implement str methods
 * Include start/end indexes as byte indexes? Calculate code points? Or just don't support?
-* Implement buffer interface?
+* Implement buffer interface
 * Decide subclassing protocol
