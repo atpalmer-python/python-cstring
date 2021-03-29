@@ -49,7 +49,7 @@ static void cstring_dealloc(PyObject *self) {
 static PyTypeObject cstring_type;
 
 static int _ensure_cstring(PyObject *self) {
-    if(Py_TYPE(self) == &cstring_type)
+    if(PyObject_TypeCheck(self, &cstring_type))
         return 1;
     PyErr_Format(
         PyExc_TypeError,
@@ -201,7 +201,7 @@ static PyObject *cstring_subscript(PyObject *self, PyObject *key) {
 static const char *_obj_to_utf8(PyObject *o, Py_ssize_t *len_p) {
     if(PyUnicode_Check(o))
         return PyUnicode_AsUTF8AndSize(o, len_p);
-    if(Py_TYPE(o) == &cstring_type) {
+    if(PyObject_TypeCheck(o, &cstring_type)) {
         *len_p = cstring_len(o);
         return CSTRING_VALUE(o);
     }
