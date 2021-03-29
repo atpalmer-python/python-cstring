@@ -456,6 +456,18 @@ PyObject *cstring_isupper(PyObject *self, PyObject *args) {
     Py_RETURN_FALSE;
 }
 
+PyDoc_STRVAR(lower__doc__, "");
+PyObject *cstring_lower(PyObject *self, PyObject *args) {
+    struct cstring *new = CSTRING_ALLOC(Py_TYPE(self), Py_SIZE(self));
+    const char *s = CSTRING_VALUE(self);
+    char *d = CSTRING_VALUE(new);
+
+    while((*d++ = tolower(*s++)) != '\0')
+        ;
+
+    return (PyObject *)new;
+}
+
 PyDoc_STRVAR(rfind__doc__, "");
 PyObject *cstring_rfind(PyObject *self, PyObject *args) {
     struct _substr_params params;
@@ -548,7 +560,7 @@ static PyMethodDef cstring_methods[] = {
     {"isupper", cstring_isupper, METH_VARARGS, isupper__doc__},
     /* TODO: join */
     /* TODO: ljust */
-    /* TODO: lower */
+    {"lower", cstring_lower, METH_VARARGS, lower__doc__},
     /* TODO: lstrip */
     /* TODO: maketrans */
     /* TODO: partition */

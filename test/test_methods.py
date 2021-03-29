@@ -138,6 +138,11 @@ def test_isupper_alnum_lc():
     assert target.isupper() == False
 
 
+def test_lower():
+    target = cstring('HELLO123')
+    assert target.lower() == cstring('hello123')
+
+
 def test_rfind():
     target = cstring('hello')
     assert target.rfind('o') == 4
