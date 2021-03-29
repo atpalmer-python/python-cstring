@@ -44,15 +44,15 @@ static const char *_obj_as_string_and_size(PyObject *o, Py_ssize_t *s) {
     if(PyUnicode_Check(o))
         return PyUnicode_AsUTF8AndSize(o, s);
 
-    if(PyBytes_Check(o)) {
-        char *buffer = NULL;
-        PyBytes_AsStringAndSize(o, &buffer, s);
+    if(PyObject_CheckBuffer(o)) {
+        /* handles bytes, bytearrays, arrays, memoryviews, etc. */
+        Py_buffer view;
+        if(PyObject_GetBuffer(o, &view, PyBUF_SIMPLE) < 0)
+            return NULL;
+        *s = view.len;
+        const char *buffer = view.buf;
+        PyBuffer_Release(&view);
         return buffer;
-    }
-
-    if(PyByteArray_Check(o)) {
-        *s = PyByteArray_Size(o);
-        return PyByteArray_AsString(o);
     }
 
     PyErr_Format(

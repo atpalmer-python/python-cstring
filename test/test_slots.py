@@ -9,6 +9,15 @@ def test_new_from_bytearray():
     assert cstring(bytearray('hello, world', 'utf8')) == cstring('hello, world')
 
 
+def test_new_from_array():
+    import array
+    assert cstring(array.array('B', b'hello, world')) == cstring('hello, world')
+
+
+def test_new_from_memoryview():
+    assert cstring(memoryview(b'hello, world')) == cstring('hello, world')
+
+
 def test_new_from_cstring():
     assert cstring(cstring('hello, world')) == cstring('hello, world')
 
