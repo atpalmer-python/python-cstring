@@ -63,6 +63,16 @@ def test_isalpha_False():
     assert target.isalpha() == False
 
 
+def test_isdigit_True():
+    target = cstring('123')
+    assert target.isdigit() == True
+
+
+def test_isdigit_False():
+    target = cstring('123.4')
+    assert target.isdigit() == False
+
+
 def test_rfind():
     target = cstring('hello')
     assert target.rfind('o') == 4

@@ -370,6 +370,17 @@ PyObject *cstring_isalpha(PyObject *self, PyObject *args) {
     Py_RETURN_TRUE;
 }
 
+PyDoc_STRVAR(isdigit__doc__, "");
+PyObject *cstring_isdigit(PyObject *self, PyObject *args) {
+    const char *p = CSTRING_VALUE(self);
+    while(*p) {
+        if(!isdigit(*p))
+            Py_RETURN_FALSE;
+        ++p;
+    }
+    Py_RETURN_TRUE;
+}
+
 PyDoc_STRVAR(rfind__doc__, "");
 PyObject *cstring_rfind(PyObject *self, PyObject *args) {
     struct _substr_params params;
@@ -452,7 +463,7 @@ static PyMethodDef cstring_methods[] = {
     {"isalpha", cstring_isalpha, METH_VARARGS, isalpha__doc__},
     /* TODO: isascii */
     /* TODO: isdecimal */
-    /* TODO: isdigit */
+    {"isdigit", cstring_isdigit, METH_VARARGS, isdigit__doc__},
     /* TODO: isidentifier */
     /* TODO: islower */
     /* TODO: isnumeric */
