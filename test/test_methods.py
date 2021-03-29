@@ -228,3 +228,8 @@ def test_upper():
     target = cstring('hello123')
     assert target.upper() == cstring('HELLO123')
 
+
+def test_swapcase():
+    target = cstring('hElLo, WoRlD 123')
+    assert target.swapcase() == cstring('HeLlO, wOrLd 123')
+

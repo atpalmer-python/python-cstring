@@ -521,6 +521,25 @@ PyObject *cstring_endswith(PyObject *self, PyObject *args) {
     return PyBool_FromLong(cmp == 0);
 }
 
+PyDoc_STRVAR(swapcase__doc__, "");
+PyObject *cstring_swapcase(PyObject *self, PyObject *args) {
+    struct cstring *new = CSTRING_ALLOC(Py_TYPE(self), Py_SIZE(self));
+    const char *s = CSTRING_VALUE(self);
+    char *d = CSTRING_VALUE(new);
+
+    for(;*s; ++s, ++d) {
+        if(islower(*s)) {
+            *d = toupper(*s);
+        } else if(isupper(*s)) {
+            *d = tolower(*s);
+        } else {
+            *d = *s;
+        }
+    }
+
+    return (PyObject *)new;
+}
+
 PyDoc_STRVAR(upper__doc__, "");
 PyObject *cstring_upper(PyObject *self, PyObject *args) {
     struct cstring *new = CSTRING_ALLOC(Py_TYPE(self), Py_SIZE(self));
@@ -588,7 +607,7 @@ static PyMethodDef cstring_methods[] = {
     /* TODO: splitlines */
     {"startswith", cstring_startswith, METH_VARARGS, startswith__doc__},
     /* TODO: strip */
-    /* TODO: swapcase */
+    {"swapcase", cstring_swapcase, METH_VARARGS, swapcase__doc__},
     /* TODO: title */
     /* TODO: translate */
     {"upper", cstring_upper, METH_VARARGS, upper__doc__},
