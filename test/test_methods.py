@@ -108,6 +108,21 @@ def test_isprintable_False():
     assert target.isprintable() == False
 
 
+def test_isspace_empty():
+    target = cstring('')
+    assert target.isspace() == False
+
+
+def test_isspace_True():
+    target = cstring('\t\n ')
+    assert target.isspace() == True
+
+
+def test_isspace_False():
+    target = cstring('hello, world\n')
+    assert target.isspace() == False
+
+
 def test_rfind():
     target = cstring('hello')
     assert target.rfind('o') == 4
