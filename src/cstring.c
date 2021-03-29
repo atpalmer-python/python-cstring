@@ -435,6 +435,27 @@ PyObject *cstring_isspace(PyObject *self, PyObject *args) {
     return PyBool_FromLong(p != CSTRING_VALUE(self));
 }
 
+PyDoc_STRVAR(isupper__doc__, "");
+PyObject *cstring_isupper(PyObject *self, PyObject *args) {
+    const char *p = CSTRING_VALUE(self);
+    while(*p) {
+        if(isalpha(*p)) {
+            if(!isupper(*p))
+                Py_RETURN_FALSE;
+            ++p;
+            while(*p) {
+                if(isalpha(*p) && !isupper(*p))
+                    Py_RETURN_FALSE;
+                ++p;
+            }
+            /* at least one uc alpha and no lc alphas */
+            Py_RETURN_TRUE;
+        }
+        ++p;
+    }
+    Py_RETURN_FALSE;
+}
+
 PyDoc_STRVAR(rfind__doc__, "");
 PyObject *cstring_rfind(PyObject *self, PyObject *args) {
     struct _substr_params params;
@@ -524,7 +545,7 @@ static PyMethodDef cstring_methods[] = {
     {"isprintable", cstring_isprintable, METH_VARARGS, isprintable__doc__},
     {"isspace", cstring_isspace, METH_VARARGS, isspace__doc__},
     /* TODO: istitle */
-    /* TODO: isupper */
+    {"isupper", cstring_isupper, METH_VARARGS, isupper__doc__},
     /* TODO: join */
     /* TODO: ljust */
     /* TODO: lower */

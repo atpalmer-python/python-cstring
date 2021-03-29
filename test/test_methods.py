@@ -123,6 +123,21 @@ def test_isspace_False():
     assert target.isspace() == False
 
 
+def test_isupper_numeric():
+    target = cstring('123')
+    assert target.isupper() == False
+
+
+def test_isupper_alnum_uc():
+    target = cstring('HELLO123')
+    assert target.isupper() == True
+
+
+def test_isupper_alnum_lc():
+    target = cstring('HELLo123')
+    assert target.isupper() == False
+
+
 def test_rfind():
     target = cstring('hello')
     assert target.rfind('o') == 4
