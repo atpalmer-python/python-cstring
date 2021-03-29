@@ -28,7 +28,7 @@ static PyTypeObject cstring_type;
 
 #define CSTRING_ALLOC(tp, len)      ((struct cstring *)(tp)->tp_alloc((tp), (len)))
 
-static PyObject *_cstring_new(PyTypeObject *type, const char *value, size_t len) {
+static PyObject *_cstring_new(PyTypeObject *type, const char *value, Py_ssize_t len) {
     struct cstring *new = CSTRING_ALLOC(type, len + 1);
     new->hash = -1;
     memcpy(new->value, value, len);
@@ -40,12 +40,34 @@ static PyObject *cstring_new_empty(void) {
     return _cstring_new(&cstring_type, "", 0);
 }
 
+static const char *_obj_as_string_and_size(PyObject *o, Py_ssize_t *s) {
+    if(PyUnicode_Check(o))
+        return PyUnicode_AsUTF8AndSize(o, s);
+
+    if(PyBytes_Check(o)) {
+        char *buffer = NULL;
+        PyBytes_AsStringAndSize(o, &buffer, s);
+        return buffer;
+    }
+
+    PyErr_Format(
+        PyExc_TypeError,
+        "Invalid initialization type: %s.",
+        Py_TYPE(o)->tp_name);
+
+    *s = -1;
+    return NULL;
+}
+
 static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject *kwargs) {
-    char *value = NULL;
-    if(!PyArg_ParseTuple(args, "s", &value))
+    PyObject *argobj = NULL;
+    if(!PyArg_ParseTuple(args, "O", &argobj))
         return NULL;
-    size_t len = strlen(value);
-    return _cstring_new(type, value, len);
+    Py_ssize_t len = 0;
+    const char *buffer = _obj_as_string_and_size(argobj, &len);
+    if(!buffer)
+        return NULL;
+    return _cstring_new(type, buffer, len);
 }
 
 static void cstring_dealloc(PyObject *self) {
