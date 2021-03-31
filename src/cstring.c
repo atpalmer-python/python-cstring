@@ -36,9 +36,23 @@ static PyObject *_cstring_new(PyTypeObject *type, const char *value, Py_ssize_t 
     return (PyObject *)new;
 }
 
+static PyObject *_cstring_realloc(PyObject *self, Py_ssize_t len) {
+    struct cstring *new = (struct cstring *)PyObject_Realloc(self, sizeof(struct cstring) + len + 1);
+    if(!new)
+        return PyErr_NoMemory();
+    Py_SET_SIZE(new, len + 1);
+    new->hash = -1;
+    return (PyObject *)new;
+}
+
+static PyObject *_cstring_copy(PyObject *self) {
+    return _cstring_new(Py_TYPE(self), CSTRING_VALUE(self), Py_SIZE(self) - 1);
+}
+
 static PyObject *cstring_new_empty(void) {
     return _cstring_new(&cstring_type, "", 0);
 }
+
 
 static const char *_obj_as_string_and_size(PyObject *o, Py_ssize_t *s) {
     if(PyUnicode_Check(o))
@@ -145,6 +159,29 @@ static PyObject *cstring_richcompare(PyObject *self, PyObject *other, int op) {
 
 static Py_ssize_t cstring_len(PyObject *self) {
     return Py_SIZE(self) - 1;
+}
+
+static PyObject *_concat_in_place(PyObject *self, PyObject *other) {
+    if(!other)
+        return PyErr_BadArgument(), NULL;
+    if(!_ensure_cstring(other))
+        return NULL;
+    if(!self)
+        return _cstring_copy(other);  /* new (mutable) copy with refcnt=1 */
+    if(!_ensure_cstring(self))
+        return NULL;
+    if(Py_REFCNT(self) > 1)
+        return PyErr_BadInternalCall(), NULL;
+
+    Py_ssize_t origlen = cstring_len(self);
+    Py_ssize_t newlen = origlen + cstring_len(other);
+    PyObject *new = _cstring_realloc(self, newlen);
+    if(!new)
+        return NULL;
+
+    memcpy(CSTRING_VALUE_AT(new, origlen), CSTRING_VALUE(other), cstring_len(other));
+    *CSTRING_VALUE_AT(new, newlen) = '\0';
+    return new;
 }
 
 static PyObject *cstring_concat(PyObject *left, PyObject *right) {
@@ -456,6 +493,37 @@ PyObject *cstring_isupper(PyObject *self, PyObject *args) {
     Py_RETURN_FALSE;
 }
 
+PyDoc_STRVAR(join__doc__, "");
+PyObject *cstring_join(PyObject *self, PyObject *arg) {
+    PyObject *iter = PyObject_GetIter(arg);
+    if(!iter)
+        return NULL;
+
+    PyObject *result = NULL;
+    PyObject *item = NULL;
+
+    while((item = PyIter_Next(iter)) != NULL) {
+        if(result) {
+            PyObject *next = _concat_in_place(result, self);
+            if(!next)
+                goto fail;
+            result = next;
+        }
+        PyObject *next = _concat_in_place(result, item);
+        if(!next)
+            goto fail;
+        Py_DECREF(item);
+        result = next;
+    }
+
+    return result;
+
+fail:
+    Py_XDECREF(item);
+    Py_XDECREF(result);
+    return NULL;
+}
+
 PyDoc_STRVAR(lower__doc__, "");
 PyObject *cstring_lower(PyObject *self, PyObject *args) {
     struct cstring *new = CSTRING_ALLOC(Py_TYPE(self), Py_SIZE(self));
@@ -589,7 +657,7 @@ static PyMethodDef cstring_methods[] = {
     {"isspace", cstring_isspace, METH_NOARGS, isspace__doc__},
     /* TODO: istitle */
     {"isupper", cstring_isupper, METH_NOARGS, isupper__doc__},
-    /* TODO: join */
+    {"join", cstring_join, METH_O, join__doc__},
     /* TODO: ljust */
     {"lower", cstring_lower, METH_NOARGS, lower__doc__},
     /* TODO: lstrip */

@@ -138,6 +138,12 @@ def test_isupper_alnum_lc():
     assert target.isupper() == False
 
 
+def test_join():
+    sep = cstring(', ')
+    items = [cstring('hello'), cstring('world')]
+    assert sep.join(items) == cstring('hello, world')
+
+
 def test_lower():
     target = cstring('HELLO123')
     assert target.lower() == cstring('hello123')
