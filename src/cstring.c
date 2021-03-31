@@ -156,9 +156,7 @@ static PyObject *cstring_richcompare(PyObject *self, PyObject *other, int op) {
     case Py_GE:
         return PyBool_FromLong(*left >= *right);
     default:
-        /* Should be unreachable */
-        PyErr_Format(PyExc_SystemError, "Invalid compare operation: %d", op);
-        return NULL;
+        Py_UNREACHABLE();
     }
 }
 
@@ -254,15 +252,12 @@ static PyObject *_cstring_subscript_slice(PyObject *self, PyObject *slice) {
     Py_ssize_t start, stop, step;
     if(PySlice_Unpack(slice, &start, &stop, &step) < 0)
         return NULL;
-    Py_ssize_t slicelen = PySlice_AdjustIndices(cstring_len(self), &start, &stop, step);
-    if(slicelen < 0) {
-        PyErr_Format(PyExc_SystemError, "Internal error: Invalid slicelen: %d", slicelen);
-        return NULL;
-    }
 
+    Py_ssize_t slicelen = PySlice_AdjustIndices(cstring_len(self), &start, &stop, step);
     struct cstring *new = CSTRING_ALLOC(Py_TYPE(self), slicelen + 1);
     if(!new)
         return NULL;
+
     char *src = CSTRING_VALUE_AT(self, start);
     for(Py_ssize_t i = 0; i < slicelen; ++i) {
         new->value[i] = *src;
