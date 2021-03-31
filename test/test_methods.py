@@ -190,6 +190,21 @@ def test_rindex_missing():
         return target.rindex('lo', 0, 4)
 
 
+def test_strip_noargs():
+    target = cstring('\r\n\n\n\t  hello, world  \t\r\n\n  ')
+    assert target.strip() == cstring('hello, world')
+
+
+def test_strip_None():
+    target = cstring('\r\n\n\n\t  hello, world  \t\r\n\n  ')
+    assert target.strip(None) == cstring('hello, world')
+
+
+def test_strip_arg():
+    target = cstring('hello, world')
+    assert target.strip('held') == cstring('o, wor')
+
+
 def test_startswith():
     target = cstring('hello, world')
     assert target.startswith('hello,') is True

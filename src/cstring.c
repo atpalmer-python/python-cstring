@@ -580,6 +580,33 @@ PyObject *cstring_startswith(PyObject *self, PyObject *args) {
     return PyBool_FromLong(cmp == 0);
 }
 
+PyDoc_STRVAR(strip__doc__, "");
+PyObject *cstring_strip(PyObject *self, PyObject *args) {
+    PyObject *charsobj = NULL;
+    if(!PyArg_ParseTuple(args, "|O", &charsobj))
+        return NULL;
+
+    const char *chars = " \t\n\v\f\r";
+
+    if(charsobj && charsobj != Py_None) {
+        if(!PyUnicode_Check(charsobj))
+            return _bad_argument_type(charsobj);
+        chars = PyUnicode_AsUTF8(charsobj);
+    }
+
+    const char *start = CSTRING_VALUE(self);
+    while(strchr(chars, *start))
+        ++start;
+
+    const char *end = &CSTRING_LAST_BYTE(self) - 1;
+    while(strchr(chars, *end))
+        --end;
+
+    Py_ssize_t newsize = end - start + 1;
+
+    return _cstring_new(Py_TYPE(self), start, newsize);
+}
+
 PyDoc_STRVAR(endswith__doc__, "");
 PyObject *cstring_endswith(PyObject *self, PyObject *args) {
     struct _substr_params params;
@@ -680,7 +707,7 @@ static PyMethodDef cstring_methods[] = {
     /* TODO: split */
     /* TODO: splitlines */
     {"startswith", cstring_startswith, METH_VARARGS, startswith__doc__},
-    /* TODO: strip */
+    {"strip", cstring_strip, METH_VARARGS, strip__doc__},
     {"swapcase", cstring_swapcase, METH_NOARGS, swapcase__doc__},
     /* TODO: title */
     /* TODO: translate */
