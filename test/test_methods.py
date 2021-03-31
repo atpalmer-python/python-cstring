@@ -205,6 +205,16 @@ def test_strip_arg():
     assert target.strip('held') == cstring('o, wor')
 
 
+def test_lstrip_arg():
+    target = cstring('hello, world')
+    assert target.lstrip('held') == cstring('o, world')
+
+
+def test_rstrip_arg():
+    target = cstring('hello, world')
+    assert target.rstrip('held') == cstring('hello, wor')
+
+
 def test_startswith():
     target = cstring('hello, world')
     assert target.startswith('hello,') is True

@@ -580,8 +580,7 @@ PyObject *cstring_startswith(PyObject *self, PyObject *args) {
     return PyBool_FromLong(cmp == 0);
 }
 
-PyDoc_STRVAR(strip__doc__, "");
-PyObject *cstring_strip(PyObject *self, PyObject *args) {
+const char *_strip_chars_from_args(PyObject *args) {
     PyObject *charsobj = NULL;
     if(!PyArg_ParseTuple(args, "|O", &charsobj))
         return NULL;
@@ -594,6 +593,13 @@ PyObject *cstring_strip(PyObject *self, PyObject *args) {
         chars = PyUnicode_AsUTF8(charsobj);
     }
 
+    return chars;
+}
+
+PyDoc_STRVAR(strip__doc__, "");
+PyObject *cstring_strip(PyObject *self, PyObject *args) {
+    const char *chars = _strip_chars_from_args(args);
+
     const char *start = CSTRING_VALUE(self);
     while(strchr(chars, *start))
         ++start;
@@ -603,7 +609,32 @@ PyObject *cstring_strip(PyObject *self, PyObject *args) {
         --end;
 
     Py_ssize_t newsize = end - start + 1;
+    return _cstring_new(Py_TYPE(self), start, newsize);
+}
 
+PyDoc_STRVAR(lstrip__doc__, "");
+PyObject *cstring_lstrip(PyObject *self, PyObject *args) {
+    const char *chars = _strip_chars_from_args(args);
+
+    const char *start = CSTRING_VALUE(self);
+    while(strchr(chars, *start))
+        ++start;
+    const char *end = &CSTRING_LAST_BYTE(self) - 1;
+
+    Py_ssize_t newsize = end - start + 1;
+    return _cstring_new(Py_TYPE(self), start, newsize);
+}
+
+PyDoc_STRVAR(rstrip__doc__, "");
+PyObject *cstring_rstrip(PyObject *self, PyObject *args) {
+    const char *chars = _strip_chars_from_args(args);
+
+    const char *start = CSTRING_VALUE(self);
+    const char *end = &CSTRING_LAST_BYTE(self) - 1;
+    while(strchr(chars, *end))
+        --end;
+
+    Py_ssize_t newsize = end - start + 1;
     return _cstring_new(Py_TYPE(self), start, newsize);
 }
 
@@ -693,7 +724,7 @@ static PyMethodDef cstring_methods[] = {
     {"join", cstring_join, METH_O, join__doc__},
     /* TODO: ljust */
     {"lower", cstring_lower, METH_NOARGS, lower__doc__},
-    /* TODO: lstrip */
+    {"lstrip", cstring_lstrip, METH_VARARGS, lstrip__doc__},
     /* TODO: maketrans */
     /* TODO: partition */
     /* TODO: removeprefix */
@@ -703,7 +734,7 @@ static PyMethodDef cstring_methods[] = {
     /* TODO: rjust */
     /* TODO: rpartition */
     /* TODO: rsplit */
-    /* TODO: rstrip */
+    {"rstrip", cstring_rstrip, METH_VARARGS, rstrip__doc__},
     /* TODO: split */
     /* TODO: splitlines */
     {"startswith", cstring_startswith, METH_VARARGS, startswith__doc__},
