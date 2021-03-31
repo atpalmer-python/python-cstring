@@ -25,6 +25,7 @@ static PyTypeObject cstring_type;
 #define CSTRING_HASH(self)          (((struct cstring *)self)->hash)
 #define CSTRING_VALUE(self)         (((struct cstring *)self)->value)
 #define CSTRING_VALUE_AT(self, i)   (&CSTRING_VALUE(self)[(i)])
+#define CSTRING_LAST_BYTE(self)     (CSTRING_VALUE(self)[Py_SIZE(self) - 1])
 
 #define CSTRING_ALLOC(tp, len)      ((struct cstring *)(tp)->tp_alloc((tp), (len)))
 
@@ -34,7 +35,7 @@ static PyObject *_cstring_new(PyTypeObject *type, const char *value, Py_ssize_t 
         return NULL;
     new->hash = -1;
     memcpy(new->value, value, len);
-    new->value[len] = '\0';
+    CSTRING_LAST_BYTE(new) = '\0';
     return (PyObject *)new;
 }
 
@@ -182,7 +183,7 @@ static PyObject *_concat_in_place(PyObject *self, PyObject *other) {
         return NULL;
 
     memcpy(CSTRING_VALUE_AT(new, origlen), CSTRING_VALUE(other), cstring_len(other));
-    *CSTRING_VALUE_AT(new, newlen) = '\0';
+    CSTRING_LAST_BYTE(new) = '\0';
     return new;
 }
 
