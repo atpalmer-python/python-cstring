@@ -29,6 +29,14 @@ static PyTypeObject cstring_type;
 
 #define CSTRING_ALLOC(tp, len)      ((struct cstring *)(tp)->tp_alloc((tp), (len)))
 
+static void *_bad_argument_type(PyObject *o) {
+    PyErr_Format(
+        PyExc_TypeError,
+        "Bad argument type: %s",
+        Py_TYPE(o)->tp_name);
+    return NULL;
+}
+
 static PyObject *_cstring_new(PyTypeObject *type, const char *value, Py_ssize_t len) {
     struct cstring *new = CSTRING_ALLOC(type, len + 1);
     if(!new)
@@ -58,7 +66,6 @@ static PyObject *cstring_new_empty(void) {
     return _cstring_new(&cstring_type, "", 0);
 }
 
-
 static const char *_obj_as_string_and_size(PyObject *o, Py_ssize_t *s) {
     if(PyUnicode_Check(o))
         return PyUnicode_AsUTF8AndSize(o, s);
@@ -74,13 +81,14 @@ static const char *_obj_as_string_and_size(PyObject *o, Py_ssize_t *s) {
         return buffer;
     }
 
-    PyErr_Format(
-        PyExc_TypeError,
-        "Invalid initialization type: %s.",
-        Py_TYPE(o)->tp_name);
+    if(PyObject_TypeCheck(o, &cstring_type)) {
+        /* TODO: implement buffer protocol for cstring */
+        *s = Py_SIZE(o) - 1;
+        return CSTRING_VALUE(o);
+    }
 
     *s = -1;
-    return NULL;
+    return _bad_argument_type(o);
 }
 
 static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject *kwargs) {
@@ -277,18 +285,6 @@ static PyObject *cstring_subscript(PyObject *self, PyObject *key) {
     return NULL;
 }
 
-static const char *_obj_to_utf8(PyObject *o, Py_ssize_t *len_p) {
-    if(PyUnicode_Check(o))
-        return PyUnicode_AsUTF8AndSize(o, len_p);
-    if(PyObject_TypeCheck(o, &cstring_type)) {
-        *len_p = cstring_len(o);
-        return CSTRING_VALUE(o);
-    }
-    PyErr_Format(
-        PyExc_TypeError, "Object cannot be type %s.", Py_TYPE(o)->tp_name);
-    return NULL;
-}
-
 static Py_ssize_t _fix_index(Py_ssize_t i, Py_ssize_t len) {
     Py_ssize_t result = i;
     if(result < 0)
@@ -316,7 +312,7 @@ static struct _substr_params *_parse_substr_args(PyObject *self, PyObject *args,
         return NULL;
 
     Py_ssize_t substr_len;
-    const char *substr = _obj_to_utf8(substr_obj, &substr_len);
+    const char *substr = _obj_as_string_and_size(substr_obj, &substr_len);
     if(!substr)
         return NULL;
 
