@@ -37,6 +37,8 @@ static PyObject *_cstring_new(PyTypeObject *type, const char *value, Py_ssize_t 
 }
 
 static PyObject *_cstring_realloc(PyObject *self, Py_ssize_t len) {
+    if(Py_REFCNT(self) > 1)
+        return PyErr_BadInternalCall(), NULL;
     struct cstring *new = (struct cstring *)PyObject_Realloc(self, sizeof(struct cstring) + len + 1);
     if(!new)
         return PyErr_NoMemory();
@@ -170,8 +172,6 @@ static PyObject *_concat_in_place(PyObject *self, PyObject *other) {
         return _cstring_copy(other);  /* new (mutable) copy with refcnt=1 */
     if(!_ensure_cstring(self))
         return NULL;
-    if(Py_REFCNT(self) > 1)
-        return PyErr_BadInternalCall(), NULL;
 
     Py_ssize_t origlen = cstring_len(self);
     Py_ssize_t newlen = origlen + cstring_len(other);
