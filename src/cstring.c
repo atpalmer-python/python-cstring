@@ -30,6 +30,8 @@ static PyTypeObject cstring_type;
 
 static PyObject *_cstring_new(PyTypeObject *type, const char *value, Py_ssize_t len) {
     struct cstring *new = CSTRING_ALLOC(type, len + 1);
+    if(!new)
+        return NULL;
     new->hash = -1;
     memcpy(new->value, value, len);
     new->value[len] = '\0';
@@ -193,6 +195,8 @@ static PyObject *cstring_concat(PyObject *left, PyObject *right) {
     Py_ssize_t size = cstring_len(left) + cstring_len(right) + 1;
 
     struct cstring *new = CSTRING_ALLOC(Py_TYPE(left), size);
+    if(!new)
+        return NULL;
     memcpy(new->value, CSTRING_VALUE(left), Py_SIZE(left));
     memcpy(&new->value[cstring_len(left)], CSTRING_VALUE(right), Py_SIZE(right)); 
     return (PyObject *)new;
@@ -207,6 +211,8 @@ static PyObject *cstring_repeat(PyObject *self, Py_ssize_t count) {
     Py_ssize_t size = (cstring_len(self) * count) + 1;
 
     struct cstring *new = CSTRING_ALLOC(Py_TYPE(self), size);
+    if(!new)
+        return NULL;
     for(Py_ssize_t i = 0; i < size - 1; i += cstring_len(self)) {
         memcpy(&new->value[i], CSTRING_VALUE(self), Py_SIZE(self));
     }
@@ -254,6 +260,8 @@ static PyObject *_cstring_subscript_slice(PyObject *self, PyObject *slice) {
     }
 
     struct cstring *new = CSTRING_ALLOC(Py_TYPE(self), slicelen + 1);
+    if(!new)
+        return NULL;
     char *src = CSTRING_VALUE_AT(self, start);
     for(Py_ssize_t i = 0; i < slicelen; ++i) {
         new->value[i] = *src;
@@ -527,6 +535,8 @@ fail:
 PyDoc_STRVAR(lower__doc__, "");
 PyObject *cstring_lower(PyObject *self, PyObject *args) {
     struct cstring *new = CSTRING_ALLOC(Py_TYPE(self), Py_SIZE(self));
+    if(!new)
+        return NULL;
     const char *s = CSTRING_VALUE(self);
     char *d = CSTRING_VALUE(new);
 
@@ -592,6 +602,8 @@ PyObject *cstring_endswith(PyObject *self, PyObject *args) {
 PyDoc_STRVAR(swapcase__doc__, "");
 PyObject *cstring_swapcase(PyObject *self, PyObject *args) {
     struct cstring *new = CSTRING_ALLOC(Py_TYPE(self), Py_SIZE(self));
+    if(!new)
+        return NULL;
     const char *s = CSTRING_VALUE(self);
     char *d = CSTRING_VALUE(new);
 
@@ -611,6 +623,8 @@ PyObject *cstring_swapcase(PyObject *self, PyObject *args) {
 PyDoc_STRVAR(upper__doc__, "");
 PyObject *cstring_upper(PyObject *self, PyObject *args) {
     struct cstring *new = CSTRING_ALLOC(Py_TYPE(self), Py_SIZE(self));
+    if(!new)
+        return NULL;
     const char *s = CSTRING_VALUE(self);
     char *d = CSTRING_VALUE(new);
 
