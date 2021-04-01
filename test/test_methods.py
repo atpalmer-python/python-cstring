@@ -215,6 +215,18 @@ def test_rstrip_arg():
     assert target.rstrip('held') == cstring('hello, wor')
 
 
+def test_partition():
+    target = cstring('hello, world')
+    result = (cstring('hello'), cstring(', '), cstring('world'))
+    assert target.partition(cstring(', ')) == result
+
+
+def test_partition_sep_not_found():
+    target = cstring('hello, world')
+    result = (cstring('hello, world'), cstring(''), cstring(''))
+    assert target.partition(cstring(': ')) == result
+
+
 def test_startswith():
     target = cstring('hello, world')
     assert target.startswith('hello,') is True

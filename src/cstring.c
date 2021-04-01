@@ -63,6 +63,7 @@ static PyObject *_cstring_copy(PyObject *self) {
 }
 
 static PyObject *cstring_new_empty(void) {
+    /* TODO: empty cstring should be a singleton */
     return _cstring_new(&cstring_type, "", 0);
 }
 
@@ -538,6 +539,51 @@ PyObject *cstring_lower(PyObject *self, PyObject *args) {
     return (PyObject *)new;
 }
 
+static PyObject *_tuple_steal_refs(Py_ssize_t count, ...) {
+    PyObject *result = PyTuple_New(count);
+    if(!result)
+        return NULL;
+
+    va_list va;
+    va_start(va, count);
+    for(int i = 0; i < count; ++i) {
+        PyObject *o = va_arg(va, PyObject *);
+        if(!o)
+            goto fail;
+        PyTuple_SET_ITEM(result, i, o);
+    }
+    va_end(va);
+
+    return result;
+
+fail:
+    Py_DECREF(result);
+    return NULL;
+}
+
+PyDoc_STRVAR(partition__doc__, "");
+PyObject *cstring_partition(PyObject *self, PyObject *arg) {
+    if(!_ensure_cstring(arg))
+        return NULL;
+
+    const char *search = CSTRING_VALUE(arg);
+
+    const char *left = CSTRING_VALUE(self);
+    const char *mid = strstr(left, search);
+    if(!mid) {
+        return _tuple_steal_refs(3,
+            (Py_INCREF(self), self),
+            cstring_new_empty(),
+            cstring_new_empty());
+    }
+    const char *right = mid + strlen(search);
+
+    return _tuple_steal_refs(3,
+        _cstring_new(Py_TYPE(self), left, mid - left),
+        _cstring_new(Py_TYPE(self), mid, right - mid),
+        _cstring_new(Py_TYPE(self), right, &CSTRING_LAST_BYTE(self) - right));
+}
+
 PyDoc_STRVAR(rfind__doc__, "");
 PyObject *cstring_rfind(PyObject *self, PyObject *args) {
     struct _substr_params params;
@@ -726,7 +772,7 @@ static PyMethodDef cstring_methods[] = {
     {"lower", cstring_lower, METH_NOARGS, lower__doc__},
     {"lstrip", cstring_lstrip, METH_VARARGS, lstrip__doc__},
     /* TODO: maketrans */
-    /* TODO: partition */
+    {"partition", cstring_partition, METH_O, partition__doc__},
     /* TODO: removeprefix */
     /* TODO: replace */
     {"rfind", cstring_rfind, METH_VARARGS, rfind__doc__},
