@@ -1,9 +1,7 @@
 #include <Python.h>
 
 
-/*
- * memrchr not available on some systems, so reimplement.
- */
+/* memrchr not available on some systems, so reimplement. */
 const char *_memrchr(const char *s, int c, size_t n) {
     for(const char *p = s + n - 1; p >= s; --p) {
         if(*p == c)
@@ -12,6 +10,14 @@ const char *_memrchr(const char *s, int c, size_t n) {
     return NULL;
 }
 
+const char *_strrstr(const char *s, const char *find) {
+    const char *p = s + strlen(s) - 1;
+    for(;p > s; --p) {
+        if(memcmp(p, find, strlen(find)) == 0)
+            return p;
+    }
+    return NULL;
+}
 
 
 struct cstring {
@@ -584,6 +590,29 @@ PyObject *cstring_partition(PyObject *self, PyObject *arg) {
         _cstring_new(Py_TYPE(self), right, &CSTRING_LAST_BYTE(self) - right));
 }
 
+PyDoc_STRVAR(rpartition__doc__, "");
+PyObject *cstring_rpartition(PyObject *self, PyObject *arg) {
+    if(!_ensure_cstring(arg))
+        return NULL;
+
+    const char *search = CSTRING_VALUE(arg);
+
+    const char *left = CSTRING_VALUE(self);
+    const char *mid = _strrstr(left, search);
+    if(!mid) {
+        return _tuple_steal_refs(3,
+            cstring_new_empty(),
+            cstring_new_empty(),
+            (Py_INCREF(self), self));
+    }
+    const char *right = mid + strlen(search);
+
+    return _tuple_steal_refs(3,
+        _cstring_new(Py_TYPE(self), left, mid - left),
+        _cstring_new(Py_TYPE(self), mid, right - mid),
+        _cstring_new(Py_TYPE(self), right, &CSTRING_LAST_BYTE(self) - right));
+}
+
 PyDoc_STRVAR(rfind__doc__, "");
 PyObject *cstring_rfind(PyObject *self, PyObject *args) {
     struct _substr_params params;
@@ -778,7 +807,7 @@ static PyMethodDef cstring_methods[] = {
     {"rfind", cstring_rfind, METH_VARARGS, rfind__doc__},
     {"rindex", cstring_rindex, METH_VARARGS, rindex__doc__},
     /* TODO: rjust */
-    /* TODO: rpartition */
+    {"rpartition", cstring_rpartition, METH_O, rpartition__doc__},
     /* TODO: rsplit */
     {"rstrip", cstring_rstrip, METH_VARARGS, rstrip__doc__},
     /* TODO: split */
