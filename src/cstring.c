@@ -1,5 +1,6 @@
 #include <Python.h>
 
+#define WHITESPACE_CHARS    " \t\n\v\f\r"
 
 /* memrchr not available on some systems, so reimplement. */
 const char *_memrchr(const char *s, int c, size_t n) {
@@ -660,7 +661,7 @@ const char *_strip_chars_from_args(PyObject *args) {
     if(!PyArg_ParseTuple(args, "|O", &charsobj))
         return NULL;
 
-    const char *chars = " \t\n\v\f\r";
+    const char *chars = WHITESPACE_CHARS;
 
     if(charsobj && charsobj != Py_None) {
         if(!PyUnicode_Check(charsobj))
