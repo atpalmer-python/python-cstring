@@ -239,6 +239,18 @@ def test_rpartition_sep_not_found():
     assert target.rpartition(cstring(': ')) == result
 
 
+def test_split():
+    assert cstring('hello, world').split(cstring(', ')) == [cstring('hello'), cstring('world')]
+    assert cstring('1,2,3').split(cstring(',')) == [
+        cstring('1'), cstring('2'), cstring('3')]
+    assert cstring('hello, world').split() == [cstring('hello,'), cstring('world')]
+    assert cstring('hello\t \n  world').split() == [cstring('hello'), cstring('world')]
+    assert cstring('1,2,3').split(cstring(','), maxsplit=1) == [
+        cstring('1'), cstring('2,3')]
+    assert cstring('1   2   3').split(maxsplit=1) == [
+        cstring('1'), cstring('2   3')]
+
+
 def test_startswith():
     target = cstring('hello, world')
     assert target.startswith('hello,') is True

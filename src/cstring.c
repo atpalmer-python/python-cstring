@@ -655,6 +655,101 @@ PyObject *cstring_rindex(PyObject *self, PyObject *args) {
     return PyLong_FromSsize_t(p - CSTRING_VALUE(self));
 }
 
+PyObject *_cstring_split_on_chars(PyObject *self, const char seps[], Py_ssize_t maxsplit) {
+    if(maxsplit < 0)
+        maxsplit = PY_SSIZE_T_MAX;
+
+    const char *start = CSTRING_VALUE(self);
+
+    PyObject *list = PyList_New(0);
+    if(!list)
+        return NULL;
+
+    while(*start) {
+        const char *end = start;
+        while(*end && !strchr(seps, *end))
+            ++end;
+
+        PyObject *new = _cstring_new(Py_TYPE(self), start, end - start);
+        if(!new)
+            goto fail;
+        PyList_Append(list, new);
+        Py_DECREF(new);
+
+        const char *skip = end + 1;
+        while(*skip && strchr(seps, *skip))
+            ++skip;
+        start = skip;
+
+        if(PyList_GET_SIZE(list) + 1 > maxsplit) {
+            PyObject *new = _cstring_new(Py_TYPE(self), start, strlen(start));
+            if(!new)
+                goto fail;
+            PyList_Append(list, new);
+            Py_DECREF(new);
+            break;
+        }
+    }
+
+    return list;
+
+fail:
+    Py_DECREF(list);
+    return NULL;
+}
+
+PyObject *_cstring_split_on_cstring(PyObject *self, PyObject *sepobj, Py_ssize_t maxsplit) {
+    if(!_ensure_cstring(sepobj))
+        return NULL;
+
+    if(maxsplit < 0)
+        maxsplit = PY_SSIZE_T_MAX;
+
+    PyObject *list = PyList_New(0);
+    if(!list)
+        return NULL;
+
+    const char *sep = CSTRING_VALUE(sepobj);
+    const char *s = CSTRING_VALUE(self);
+    for(;;) {
+        const char *e = strstr(s, sep);
+        if(!e)
+            break;
+        PyObject *new = _cstring_new(Py_TYPE(self), s, e - s);
+        if(!new)
+            goto fail;
+        PyList_Append(list, new);
+        Py_DECREF(new);
+        s = e + strlen(sep);
+        if(PyList_GET_SIZE(list) + 1 > maxsplit)
+            break;
+    }
+
+    PyObject *new = _cstring_new(Py_TYPE(self), s, strlen(s));
+    if(!new)
+        goto fail;
+    PyList_Append(list, new);
+
+    return list;
+
+fail:
+    Py_DECREF(list);
+    return NULL;
+}
+
+PyDoc_STRVAR(split__doc__, "");
+PyObject *cstring_split(PyObject *self, PyObject *args, PyObject *kwargs) {
+    PyObject *sepobj = Py_None;
+    int maxsplit = -1;
+    char *kwlist[] = {"sep", "maxsplit", NULL};
+    if(!PyArg_ParseTupleAndKeywords(args, kwargs, "|Oi", kwlist, &sepobj, &maxsplit))
+        return NULL;
+
+    return (sepobj == Py_None)
+        ? _cstring_split_on_chars(self, WHITESPACE_CHARS, maxsplit)
+        : _cstring_split_on_cstring(self, sepobj, maxsplit);
+}
+
 PyDoc_STRVAR(startswith__doc__, "");
 PyObject *cstring_startswith(PyObject *self, PyObject *args) {
     struct _substr_params params;
@@ -821,7 +916,7 @@ static PyMethodDef cstring_methods[] = {
     {"rpartition", cstring_rpartition, METH_O, rpartition__doc__},
     /* TODO: rsplit */
     {"rstrip", cstring_rstrip, METH_VARARGS, rstrip__doc__},
-    /* TODO: split */
+    {"split", (PyCFunction)cstring_split, METH_VARARGS | METH_KEYWORDS, split__doc__},
     /* TODO: splitlines */
     {"startswith", cstring_startswith, METH_VARARGS, startswith__doc__},
     {"strip", cstring_strip, METH_VARARGS, strip__doc__},
