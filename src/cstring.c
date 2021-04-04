@@ -121,6 +121,9 @@ static PyObject *cstring_new(PyTypeObject *type, PyObject *args, PyObject *kwarg
     if(!buffer)
         return NULL;
 
+    if(len == 0)
+        return cstring_new_empty();
+
     return _cstring_new(type, buffer, len);
 }
 
