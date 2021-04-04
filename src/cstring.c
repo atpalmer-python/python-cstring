@@ -36,6 +36,9 @@ static PyTypeObject cstring_type;
 
 #define CSTRING_ALLOC(tp, len)      ((struct cstring *)(tp)->tp_alloc((tp), (len)))
 
+/* singleton, initialized in cstring_new_empty */
+static const struct cstring *cstring_EMPTY = NULL;
+
 static void *_bad_argument_type(PyObject *o) {
     PyErr_Format(
         PyExc_TypeError,
@@ -70,8 +73,12 @@ static PyObject *_cstring_copy(PyObject *self) {
 }
 
 static PyObject *cstring_new_empty(void) {
-    /* TODO: empty cstring should be a singleton */
-    return _cstring_new(&cstring_type, "", 0);
+    if(!cstring_EMPTY) {
+        cstring_EMPTY = (struct cstring *)_cstring_new(&cstring_type, "", 0);
+    }
+    /* leaking one reference for singleton cache (never cleaned up) */
+    Py_INCREF(cstring_EMPTY);
+    return (PyObject *)cstring_EMPTY;
 }
 
 static const char *_obj_as_string_and_size(PyObject *o, Py_ssize_t *s) {
